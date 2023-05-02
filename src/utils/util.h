@@ -8,4 +8,4 @@
 typedef char *str;
 
 void *mmalloc(size_t size);
-str String(char *str);
+str string(char *str);

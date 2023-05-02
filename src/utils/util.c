@@ -9,7 +9,7 @@ void *mmalloc(size_t size) {
     return p;
 }
 
-str String(char *s) {
+str string(char *s) {
     str p = mmalloc(strlen(s)+1);
     strcpy(p,s);
     return p;
