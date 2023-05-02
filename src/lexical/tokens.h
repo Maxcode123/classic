@@ -24,13 +24,16 @@ extern YYSTYPE yylval;
 # define EQUAL 268  // =
 # define SEMICOLON 269  // ;
 # define COLON 270  // :
-# define ID 271  
-# define NUM 272
-# define NOTA 273
-# define ADESM 274
-# define DESM 275
-# define INT 276
-# define SERIES 277
-# define EXEMP 278
-# define OPER 279
-# define ANEF 280
+# define COMMA 271 // ,
+
+# define ID 290  
+# define NUM 291
+
+# define NOTA 310
+# define ADESM 311
+# define DESM 312
+# define INT 313
+# define SERIES 314
+# define EXEMP 315
+# define OPER 316
+# define ANEF 317
