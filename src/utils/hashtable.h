@@ -5,8 +5,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "util.h"
+
 typedef struct _Entry {
-    void *key;
+    str key;
     void *value;
 } *Entry;
 
@@ -17,7 +19,7 @@ typedef struct _HashTable {
 } *HashTable;
 
 typedef struct _Iterator {
-    char *key;
+    str key;
     void *value;
     HashTable _ht;
     size_t _index;
@@ -26,14 +28,14 @@ typedef struct _Iterator {
 // djb2 hash algorithm
 unsigned long ht_hash(unsigned char *key, int max_size);
 
-//Initialize the ht by suze
+//Initialize the hash table
 HashTable ht_init(int size);
 
-//Insert new record to ht
-void ht_insert(HashTable table, char *key, void *value);
+// 
+void ht_set(HashTable table, str key, void *value);
 
 //Gets the record by "key"
-void *ht_search(HashTable table, char *key);
+void *ht_get(HashTable table, str key);
 
 //Gets the size of the valid records
 int ht_size(HashTable table);

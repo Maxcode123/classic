@@ -24,7 +24,7 @@ HashTable ht_init(int size) {
 }
 
 
-void ht_insert(HashTable table, char *key, void *value) {
+void ht_set(HashTable table, str key, void *value) {
     unsigned long hash = ht_hash((unsigned char *) key, table->max_size);
     while (table->entries[hash].key != NULL && strcmp(table->entries[hash].key, key) != 0) {
         hash = (hash + 1) % table->max_size;
@@ -34,7 +34,7 @@ void ht_insert(HashTable table, char *key, void *value) {
     table->entries[hash].value = value;
 }
 
-void *ht_search(HashTable table, char *key) {
+void *ht_get(HashTable table, str key) {
     unsigned long index = ht_hash((unsigned char *) key, table->max_size);
     while (table->entries[index].key != NULL && strcmp(table->entries[index].key, key) != 0) {
         index = (index + 1) % table->max_size;
