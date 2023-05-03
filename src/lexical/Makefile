@@ -1,10 +1,7 @@
-lexer: $(SRC)/lexical/lexer
+lexer: $(BIN)/lexer
 
-$(SRC)/lexical/lexer: $(OBJ)/lexdriver.o $(OBJ)/lex.yy.o $(OBJ)/util.o
+$(BIN)/lexer: $(OBJ)/scan.o $(OBJ)/lex.yy.o $(OBJ)/util.o $(OBJ)/hashtable.o
 	$(CC) $(ARGS) $^ -o $@
-
-$(OBJ)/lexdriver.o: $(SRC)/scanner/lexdriver.c
-	$(CC) $(ARGS) -c $< -o $@
 
 $(SRC)/lexical/lex.yy.c: $(SRC)/lexical/classic.lex
 	lex -o $@ $<

@@ -38,26 +38,26 @@ num [-+]?[0-9]*\.?[0-9]
 <INITIAL>oper {adjust(); return OPER;}
 <INITIAL>anef {adjust(); return ANEF;}
 
-<INITIAL>{id} {adjust(); yylval.sval = String(yytext); return ID;}
+<INITIAL>{id} {adjust(); yylval.sval = string(yytext); return ID;}
 <INITIAL>{num} {adjust(); yylval.ival = atoi(yytext); return NUM;}
 
 <INITIAL>"+" {adjust(); return PLUS;}
 <INITIAL>"-" {adjust(); return MINUS;}
 <INITIAL>"*" {adjust(); return TIMES;}
 <INITIAL>"/" {adjust(); return DIV;}
-<INITIAL>"\" {adjust(); return BACKSLASH;}
+<INITIAL>"\\" {adjust(); return BACKSLASH;}
 <INITIAL>"(" {adjust(); return LPAREN;}
 <INITIAL>")" {adjust(); return RPAREN;}
 <INITIAL>"{" {adjust(); return LBRACK;}
 <INITIAL>"}" {adjust(); return RBRACK;}
 <INITIAL>"." {adjust(); return DOT;}
-<INITIAL>""" {adjust(); return DQUOTE;}
+<INITIAL>"\"" {adjust(); return DQUOTE;}
 <INITIAL>"=" {adjust(); return EQUAL;}
 <INITIAL>";" {adjust(); return SEMICOLON;}
 <INITIAL>":" {adjust(); return COLON;}
 <INITIAL>"," {adjust(); return COMMA;}
 
-<INITIAL>" "	 {adjust(); continue;}
+<INITIAL>" " {adjust(); continue;}
 <INITIAL>\n	 {adjust(); continue;}
 <INITIAL>\t {adjust(); continue;}
 <INITIAL>.	 {adjust(); fprintf(stderr, "illegal token");}

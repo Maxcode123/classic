@@ -1,5 +1,6 @@
 CC=gcc
 SRC=src
+BIN=bin
 OBJ=obj
 ARGS=-g
 TEST=tests
@@ -30,4 +31,4 @@ $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
 clean:
-	rm -rf obj/*
+	rm -rf obj/* bin/* src/lexical/lex.yy.c

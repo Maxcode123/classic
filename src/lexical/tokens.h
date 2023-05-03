@@ -15,7 +15,7 @@ extern YYSTYPE yylval;
 # define TIMES 259  // *
 # define DIV 260  // /
 # define BACKSLASH 261  /* \ */
-# define LPAREN 262  2// ()
+# define LPAREN 262  // ()
 # define RPAREN 263  // )
 # define LBRACK 264  // {
 # define RBRACK 265  // }
