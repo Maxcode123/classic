@@ -3,11 +3,11 @@ oper: int  myfunc(int a, int b) {
 }
 
 exemp: MyType {
-	int field 1;
+	int field1;
 	series field2;
 	anef meth1();
 }
 
 MyType\anef meth1() {
-	return 2;
+	return 2.3439;
 }

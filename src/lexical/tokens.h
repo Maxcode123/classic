@@ -5,6 +5,7 @@
 typedef union {
     int pos;
     int ival;
+    double dval;
     str sval;
 } YYSTYPE;
 extern YYSTYPE yylval;
@@ -27,7 +28,8 @@ extern YYSTYPE yylval;
 # define COMMA 271 // ,
 
 # define ID 290  
-# define NUM 291
+# define NUM_I 291
+# define NUM_D 292
 
 # define NOTA 310
 # define ADESM 311

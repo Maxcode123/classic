@@ -24,7 +24,8 @@ void adjust(void)
 %}
 
 id [a-zA-Z][a-zA-Z0-9]*
-num [-+]?[0-9]*\.?[0-9]
+int [-]?[0-9]+
+double [-+]?[0-9]+\.?[0-9]*
 
 %Start COMMENT
 %%
@@ -39,7 +40,8 @@ num [-+]?[0-9]*\.?[0-9]
 <INITIAL>anef {adjust(); return ANEF;}
 
 <INITIAL>{id} {adjust(); yylval.sval = string(yytext); return ID;}
-<INITIAL>{num} {adjust(); yylval.ival = atoi(yytext); return NUM;}
+<INITIAL>{int} {adjust(); yylval.ival = atoi(yytext); return NUM_I;}
+<INITIAL>{double} {adjust(); yylval.dval = atof(yytext); return NUM_D;}
 
 <INITIAL>"+" {adjust(); return PLUS;}
 <INITIAL>"-" {adjust(); return MINUS;}

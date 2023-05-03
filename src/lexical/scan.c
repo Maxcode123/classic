@@ -21,8 +21,10 @@ int main(int argc, char **argv) {
             case ID:
             printf("%10s %4d %s\n", getname(i), pos, yylval.sval);
             break;
-            case NUM:
+            case NUM_I:
             printf("%10s %4d %d\n", getname(i), pos, yylval.ival);
+            case NUM_D:
+            printf("%10s %4d %f\n", getname(i), pos, yylval.dval);
             break;
             default:
             printf("%10s %4d\n", getname(i), pos);
