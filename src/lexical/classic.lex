@@ -9,7 +9,7 @@
 extern int pos;
 int _pos=1;
 
-int yywrap(void)
+extern "C" int yywrap(void)
 {
  _pos=1;
  return 1;
@@ -38,10 +38,11 @@ double [-+]?[0-9]+\.?[0-9]*
 <INITIAL>exemp {adjust(); return EXEMP;}
 <INITIAL>oper {adjust(); return OPER;}
 <INITIAL>anef {adjust(); return ANEF;}
+<INITIAL>return {adjust(); return RETURN;}
 
-<INITIAL>{id} {adjust(); yylval.sval = string(yytext); return ID;}
-<INITIAL>{int} {adjust(); yylval.ival = atoi(yytext); return NUM_I;}
-<INITIAL>{double} {adjust(); yylval.dval = atof(yytext); return NUM_D;}
+<INITIAL>{id} {adjust(); return ID;}
+<INITIAL>{int} {adjust(); return NUM_I;}
+<INITIAL>{double} {adjust(); return NUM_D;}
 
 <INITIAL>"+" {adjust(); return PLUS;}
 <INITIAL>"-" {adjust(); return MINUS;}

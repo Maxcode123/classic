@@ -1,10 +1,12 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <unordered_map>
+#include <string>
+#include <iostream>
 
 #include "tokens.h"
-#include "../utils/hashtable.h"
+
+using namespace std;
 
 YYSTYPE yylval;
 
@@ -14,13 +16,7 @@ int pos = 0;
 
 int yylex(void); /* prototype for the lexing function */
 
-static HashTable tokenmap;
+static std::unordered_map<int, std::string> tokenmap;
 
 // Creates and assigns tokenmap.
-HashTable tokenmapinit();
-
-// map int value to token str
-str getname(int i);
-
-// set fname as lex input
-void reset(str fname);
+void tokenmapinit();

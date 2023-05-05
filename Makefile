@@ -1,15 +1,18 @@
-CC=gcc
+CC=g++
 SRC=src
 BIN=bin
 OBJ=obj
 ARGS=-g
 TEST=tests
 DB=gdb
-FILE=test.cls
+FILE=$(TEST)/test.classic
 
 
 include src/lexical/Makefile
 
+
+run-lexer: $(BIN)/lexer
+	$< $(FILE)
 
 debug-file: $(TEST)/bin/main
 	clear
@@ -31,4 +34,4 @@ $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
 clean:
-	rm -rf obj/* bin/* src/lexical/lex.yy.c
+	rm -rf obj/* bin/* src/lexical/lex.yy.cc src/lexical/lex.h

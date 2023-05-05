@@ -1,13 +1,18 @@
 #pragma once
 
+#include <string>
+
 #include "../utils/util.h"
 
-typedef union {
+using namespace std;
+
+typedef union _YYSTYPE {
     int pos;
     int ival;
     double dval;
     str sval;
 } YYSTYPE;
+
 extern YYSTYPE yylval;
 
 
@@ -39,3 +44,4 @@ extern YYSTYPE yylval;
 # define EXEMP 315
 # define OPER 316
 # define ANEF 317
+# define RETURN 318
