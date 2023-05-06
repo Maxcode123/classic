@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../utils/util.h"
 #include "tokens.h"
 
 extern int pos;
@@ -30,35 +29,36 @@ double [-+]?[0-9]+\.?[0-9]*
 %Start COMMENT
 %%
 
-<INITIAL>nota {adjust(); return NOTA;}
-<INITIAL>adesm {adjust(); return ADESM;}
-<INITIAL>desm {adjust(); return DESM;}
-<INITIAL>int {adjust(); return INT;}
-<INITIAL>series {adjust(); return SERIES;}
-<INITIAL>exemp {adjust(); return EXEMP;}
-<INITIAL>oper {adjust(); return OPER;}
-<INITIAL>anef {adjust(); return ANEF;}
-<INITIAL>return {adjust(); return RETURN;}
+<INITIAL>nota {adjust(); yylval = Token(Lexeme::NOTA); return 1;}
+<INITIAL>adesm {adjust(); yylval = Token(Lexeme::ADESM); return 1;}
+<INITIAL>desm {adjust(); yylval = Token(Lexeme::DESM); return 1;}
+<INITIAL>int {adjust(); yylval = Token(Lexeme::INT); return 1;}
+<INITIAL>dupl {adjust(); yylval = Token(Lexeme::DUPL); return 1;}
+<INITIAL>series {adjust(); yylval = Token(Lexeme::SERIES); return 1;}
+<INITIAL>exemp {adjust(); yylval = Token(Lexeme::EXEMP); return 1;}
+<INITIAL>oper {adjust(); yylval = Token(Lexeme::OPER); return 1;}
+<INITIAL>anef {adjust(); yylval = Token(Lexeme::ANEF); return 1;}
+<INITIAL>return {adjust(); yylval = Token(Lexeme::RETURN); return 1;}
 
-<INITIAL>{id} {adjust(); return ID;}
-<INITIAL>{int} {adjust(); return NUM_I;}
-<INITIAL>{double} {adjust(); return NUM_D;}
+<INITIAL>{id} {adjust(); yylval = Token(Lexeme::ID, yytext); return 1;}
+<INITIAL>{int} {adjust(); yylval = Token(Lexeme::NUM_I, yytext); return 1;}
+<INITIAL>{double} {adjust(); yylval = Token(Lexeme::NUM_D, yytext); return 1;}
 
-<INITIAL>"+" {adjust(); return PLUS;}
-<INITIAL>"-" {adjust(); return MINUS;}
-<INITIAL>"*" {adjust(); return TIMES;}
-<INITIAL>"/" {adjust(); return DIV;}
-<INITIAL>"\\" {adjust(); return BACKSLASH;}
-<INITIAL>"(" {adjust(); return LPAREN;}
-<INITIAL>")" {adjust(); return RPAREN;}
-<INITIAL>"{" {adjust(); return LBRACK;}
-<INITIAL>"}" {adjust(); return RBRACK;}
-<INITIAL>"." {adjust(); return DOT;}
-<INITIAL>"\"" {adjust(); return DQUOTE;}
-<INITIAL>"=" {adjust(); return EQUAL;}
-<INITIAL>";" {adjust(); return SEMICOLON;}
-<INITIAL>":" {adjust(); return COLON;}
-<INITIAL>"," {adjust(); return COMMA;}
+<INITIAL>"+" {adjust(); yylval = Token(Lexeme::PLUS); return 1;}
+<INITIAL>"-" {adjust(); yylval = Token(Lexeme::MINUS); return 1;}
+<INITIAL>"*" {adjust(); yylval = Token(Lexeme::TIMES); return 1;}
+<INITIAL>"/" {adjust(); yylval = Token(Lexeme::DIV); return 1;}
+<INITIAL>"\\" {adjust(); yylval = Token(Lexeme::BACKSLASH); return 1;}
+<INITIAL>"(" {adjust(); yylval = Token(Lexeme::LPAREN); return 1;}
+<INITIAL>")" {adjust(); yylval = Token(Lexeme::RPAREN); return 1;}
+<INITIAL>"{" {adjust(); yylval = Token(Lexeme::LBRACK); return 1;}
+<INITIAL>"}" {adjust(); yylval = Token(Lexeme::RBRACK); return 1;}
+<INITIAL>"." {adjust(); yylval = Token(Lexeme::DOT); return 1;}
+<INITIAL>"\"" {adjust(); yylval = Token(Lexeme::DQUOTE); return 1;}
+<INITIAL>"=" {adjust(); yylval = Token(Lexeme::EQUAL); return 1;}
+<INITIAL>";" {adjust(); yylval = Token(Lexeme::SEMICOLON); return 1;}
+<INITIAL>":" {adjust(); yylval = Token(Lexeme::COLON); return 1;}
+<INITIAL>"," {adjust(); yylval = Token(Lexeme::COMMA); return 1;}
 
 <INITIAL>" " {adjust(); continue;}
 <INITIAL>\n	 {adjust(); continue;}

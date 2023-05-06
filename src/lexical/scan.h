@@ -8,15 +8,10 @@
 
 using namespace std;
 
-YYSTYPE yylval;
-
 extern FILE *yyin;
+
+Token yylval;
 
 int pos = 0;
 
 int yylex(void); /* prototype for the lexing function */
-
-static std::unordered_map<int, std::string> tokenmap;
-
-// Creates and assigns tokenmap.
-void tokenmapinit();

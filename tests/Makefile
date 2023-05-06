@@ -1,5 +1,5 @@
 
-test-token: $(BIN)/test_tokens
+test-tokens: $(BIN)/test_tokens
 	$<
 
 $(BIN)/test_tokens: $(OBJ)/tokens.o $(OBJ)/test_tokens.o

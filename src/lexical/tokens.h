@@ -60,8 +60,4 @@ class Token {
 };
 
 
-typedef struct {
-    int scanned;
-} YYSTYPE;
-
-extern YYSTYPE yylval;
+extern Token yylval;
