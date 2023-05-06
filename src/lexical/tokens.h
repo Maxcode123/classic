@@ -1,47 +1,67 @@
 #pragma once
 
 #include <string>
+#include <algorithm>
 
 #include "../utils/util.h"
 
 using namespace std;
 
-typedef union _YYSTYPE {
-    int pos;
-    int ival;
-    double dval;
-    str sval;
+
+// Pseudo enumeration of lexemes.
+class Lexeme {
+    public:
+        inline static const std::string PLUS = "PLUS";
+        inline static const std::string MINUS = "MINUS";
+        inline static const std::string TIMES = "TIMES";
+        inline static const std::string DIV = "DIV";
+        inline static const std::string BACKSLASH = "BACKSLASH";
+        inline static const std::string LPAREN = "LPAREN";
+        inline static const std::string RPAREN = "RPAREN";
+        inline static const std::string LBRACK = "LBRACK";
+        inline static const std::string RBRACK = "RBRACK";
+        inline static const std::string DOT = "DOT";
+        inline static const std::string DQUOTE = "DQUOTE";
+        inline static const std::string EQUAL = "EQUAL";
+        inline static const std::string SEMICOLON = "SEMICOLON";
+        inline static const std::string COLON = "COLON";
+        inline static const std::string COMMA = "COMMA";
+        inline static const std::string ID = "ID";
+        inline static const std::string NUM_I = "NUM_I";
+        inline static const std::string NUM_D = "NUM_D";
+        inline static const std::string STR = "STR";
+        inline static const std::string NOTA = "NOTA";
+        inline static const std::string ADESM = "ADESM";
+        inline static const std::string DESM = "DESM";
+        inline static const std::string INT = "INT";
+        inline static const std::string DUPL = "DUPL";
+        inline static const std::string SERIES = "SERIES";
+        inline static const std::string EXEMP = "EXEMP";
+        inline static const std::string OPER = "OPER";
+        inline static const std::string ANEF = "ANEF";
+        inline static const std::string RETURN = "RETURN";
+
+        static std::string semantic[];
+};
+
+
+class Token {
+    public:
+        std::string lexeme_str;
+        std::string semantval();
+        Token(std::string lexeme, std::string semant) {
+            lexeme_str = lexeme;
+            semant_str = semant;
+            }
+        Token(std::string lexeme) : Token(lexeme, "") {}
+        Token() : Token("", "") {}
+    private:
+        std::string semant_str;
+};
+
+
+typedef struct {
+    int scanned;
 } YYSTYPE;
 
 extern YYSTYPE yylval;
-
-
-# define PLUS 257  // +
-# define MINUS 258  // -
-# define TIMES 259  // *
-# define DIV 260  // /
-# define BACKSLASH 261  /* \ */
-# define LPAREN 262  // ()
-# define RPAREN 263  // )
-# define LBRACK 264  // {
-# define RBRACK 265  // }
-# define DOT 266  // .
-# define DQUOTE 267  // "
-# define EQUAL 268  // =
-# define SEMICOLON 269  // ;
-# define COLON 270  // :
-# define COMMA 271 // ,
-
-# define ID 290  
-# define NUM_I 291
-# define NUM_D 292
-
-# define NOTA 310
-# define ADESM 311
-# define DESM 312
-# define INT 313
-# define SERIES 314
-# define EXEMP 315
-# define OPER 316
-# define ANEF 317
-# define RETURN 318

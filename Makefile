@@ -9,6 +9,7 @@ FILE=$(TEST)/test.classic
 
 
 include src/lexical/Makefile
+include tests/Makefile
 
 
 run-lexer: $(BIN)/lexer
@@ -34,4 +35,4 @@ $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
 clean:
-	rm -rf obj/* bin/* src/lexical/lex.yy.cc src/lexical/lex.h
+	rm -rf obj/* bin/* src/lexical/lex.yy.c src/lexical/lex.h
