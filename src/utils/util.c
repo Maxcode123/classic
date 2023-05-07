@@ -10,7 +10,7 @@ void *mmalloc(size_t size) {
 }
 
 str string(char *s) {
-    str p = mmalloc(strlen(s)+1);
+    str p = (str)mmalloc(strlen(s)+1);
     strcpy(p,s);
     return p;
 }
