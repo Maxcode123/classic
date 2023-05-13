@@ -58,4 +58,4 @@ class Token {
 };
 
 
-extern Token yylval;
+extern Token current_token;
