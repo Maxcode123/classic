@@ -1,5 +1,5 @@
 
-parser: $(SRC)/syntax/classical.c
+parser: $(SRC)/syntax/classical.tab.c
 
-$(SRC)/syntax/classical.c: $(SRC)/syntax/classical.y
-	bison $< -v
+$(SRC)/syntax/classical.tab.c: $(SRC)/syntax/classical.y
+	bison $< -H -o $@

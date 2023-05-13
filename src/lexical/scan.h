@@ -10,7 +10,7 @@ using namespace std;
 
 extern FILE *yyin;
 
-Token yylval;
+Token current_token;
 
 int pos = 0;
 
