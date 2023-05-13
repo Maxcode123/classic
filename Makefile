@@ -6,6 +6,7 @@ ARGS=-g
 TEST=tests
 DB=gdb
 FILE=$(TEST)/test.classic
+RM=rm -rf
 
 
 include src/lexical/Makefile
@@ -35,5 +36,16 @@ run: $(TEST)/bin/main
 $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
-clean:
-	rm -rf obj/* bin/* src/lexical/lex.yy.c src/lexical/lex.h src/syntax/classical.tab.h
+clean: clean-binaries clean-object clean-lexical clean-syntax 
+
+clean-binaries:
+	$(RM) bin/*
+
+clean-object:
+	$(RM) obj/*
+
+clean-lexical:
+	$(RM) src/lexical/lex.yy.c src/lexical/lex.h
+
+clean-syntax:
+	$(RM) src/syntax/classical.tab.c src/syntax/classical.output
