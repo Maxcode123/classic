@@ -9,6 +9,7 @@ FILE=$(TEST)/test.classic
 
 
 include src/lexical/Makefile
+include src/syntax/Makefile
 include tests/Makefile
 
 
@@ -35,4 +36,4 @@ $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
 clean:
-	rm -rf obj/* bin/* src/lexical/lex.yy.c src/lexical/lex.h
+	rm -rf obj/* bin/* src/lexical/lex.yy.c src/lexical/lex.h src/syntax/classical.tab.h

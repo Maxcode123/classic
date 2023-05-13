@@ -6,11 +6,11 @@ exemp: Position {
 }
 
 oper: Position pos1() {
-	return Position(0, 0);
+	exodus Position(0, 0);
 }
 
 oper: Position pos2() {
-	return Position(10, 3);
+	exodus Position(10, 3);
 }
 
 oper: int initus() {
@@ -19,4 +19,6 @@ oper: int initus() {
 
 	pos1.move(4, 5);
 	pos2.move(9, 8);
+
+	exodus 0;
 }
