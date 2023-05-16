@@ -28,4 +28,11 @@ TEST(TokenTest, testsemantval) {
 TEST(LexemeItemTest, testinit) {
     LexemeItem i = LexemeItem("smth", 10);
     EXPECT_TRUE(i.name == "smth");
+    EXPECT_TRUE(i.value() == 10);
+}
+
+TEST(LexemeItemTest, testlexemebase) {
+    set_lexeme_base(5);
+    LexemeItem i = LexemeItem("abc", 2);
+    EXPECT_TRUE(i.value() == 7);
 }

@@ -17,14 +17,6 @@ include tests/Makefile
 run-lexer: $(BIN)/lexer
 	$< $(FILE)
 
-debug-file: $(TEST)/bin/main
-	clear
-	$(DB) --args $< $(FILE)
-
-debug: $(TEST)/bin/main
-	clear
-	$(DB) $<
-
 run-file: $(TEST)/bin/main
 	clear
 	$< $(FILE)
@@ -32,6 +24,16 @@ run-file: $(TEST)/bin/main
 run: $(TEST)/bin/main
 	clear
 	$<
+
+test: test-tokens
+
+debug-file: $(TEST)/bin/main
+	clear
+	$(DB) --args $< $(FILE)
+
+debug: $(TEST)/bin/main
+	clear
+	$(DB) $<
 
 $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
