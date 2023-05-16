@@ -17,10 +17,10 @@
 %token <sval> EGO "ego"
 %token <sval> INITUS "initus"
 %token <sval> EXODUS "exodus"
-%token <sval> PLUS "+"
-%token <sval> MINUS "-"
-%token <sval> DIV "/"
-%token <sval> TIMES "*"
+%left <sval> PLUS "+"
+%left <sval> MINUS "-"
+%left <sval> DIV "/"
+%left <sval> TIMES "*"
 %token <sval> LPAREN "("
 %token <sval> RPAREN ")"
 %token <sval> LBRACK "{"
@@ -45,8 +45,11 @@ classdefs:
 
 classdef-list:
     %empty
-    | classdef
-    | classdef-list classdef
+    | non-empty-classdef-list
+
+non-empty-classdef-list:
+    classdef
+    | non-empty-classdef-list classdef
 
 classdef:
     EXEMP COLON custom-type LBRACK class-body RBRACK
@@ -59,8 +62,11 @@ class-body:
 
 attr-decl-list:
     %empty
-    | attr-decl
-    | attr-decl-list attr-decl
+    | non-empty-attr-decl-list
+
+non-empty-attr-decl-list:
+    attr-decl
+    | non-empty-attr-decl-list attr-decl
 
 attr-decl:
     type ID SEMICOLON
@@ -91,11 +97,11 @@ exodus-type:
 
 param-list:
     %empty
-    | param-list-ne
+    | non-empty-param-list
 
-param-list-ne:
+non-empty-param-list:
     param
-    | param-list-ne COMMA param
+    | non-empty-param-list COMMA param
 
 param:
     type ID
@@ -105,7 +111,10 @@ func-body:
 
 statement:
     empty-stm
-    | compound-stm
+    | non-empty-stm
+    
+non-empty-stm:
+    compound-stm
     | assign-stm
     | exp
 
@@ -113,7 +122,7 @@ empty-stm:
     %empty
 
 compound-stm:
-    statement SEMICOLON statement SEMICOLON
+    non-empty-stm SEMICOLON non-empty-stm SEMICOLON
 
 assign-stm:
     ids EQUAL exp
@@ -136,11 +145,11 @@ func-call:
 
 arg-list:
     %empty
-    | arg-list-ne
+    | non-empty-arg-list
 
-arg-list-ne:
+non-empty-arg-list:
     arg
-    | arg-list-ne COMMA arg
+    | non-empty-arg-list COMMA arg
 
 arg:
     ID EQUAL exp
