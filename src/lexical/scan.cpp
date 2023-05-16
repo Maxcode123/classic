@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     for (;;) {
         i = yylex();
         if (i == 0) break;
-        std::cout << current_token.lexeme_str << " " << pos << " " << current_token.semantval() << "\n";
+        std::cout << current_token.lexeme_str << "  " << pos << "  " << current_token.semantval() << "\n";
     }
     return 0;
 }

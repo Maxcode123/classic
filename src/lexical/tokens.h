@@ -5,36 +5,44 @@
 
 using namespace std;
 
+class LexemeItem {
+    public:
+        std::string name;
+        int value;
+        LexemeItem(std::string str, int val) {name = str; value = val;}
+        LexemeItem(std::string str) : LexemeItem(str, 1) {}
+};
+
 
 // Pseudo enumeration of lexemes.
 class Lexeme {
     public:
-        inline static const std::string OPER = "OPER";
-        inline static const std::string EXEMP = "EXEMP";
-        inline static const std::string INT_TYPE = "INT_TYPE";
-        inline static const std::string DUPL_TYPE = "DUPL_TYPE";
-        inline static const std::string STR_TYPE = "STR_TYPE";
-        inline static const std::string ANEF = "ANEF";
-        inline static const std::string EGO = "EGO";
-        inline static const std::string INITUS = "INITUS";
-        inline static const std::string EXODUS = "EXODUS";
-        inline static const std::string PLUS = "PLUS";
-        inline static const std::string MINUS = "MINUS";
-        inline static const std::string DIV = "DIV";
-        inline static const std::string TIMES = "TIMES";
-        inline static const std::string LPAREN = "LPAREN";
-        inline static const std::string RPAREN = "RPAREN";
-        inline static const std::string LBRACK = "LBRACK";
-        inline static const std::string RBRACK = "RBRACK";
-        inline static const std::string COLON = "COLON";
-        inline static const std::string SEMICOLON = "SEMICOLON";
-        inline static const std::string DOT = "DOT";
-        inline static const std::string COMMA = "COMMA";
-        inline static const std::string EQUAL = "EQUAL";
-        inline static const std::string ID = "ID";
-        inline static const std::string INT = "INT";
-        inline static const std::string DUPL = "DUPL";
-        inline static const std::string STR = "STR";
+        inline static const LexemeItem OPER = LexemeItem("OPER");
+        inline static const LexemeItem EXEMP = LexemeItem("EXEMP");
+        inline static const LexemeItem INT_TYPE = LexemeItem("INT_TYPE");
+        inline static const LexemeItem DUPL_TYPE = LexemeItem("DUPL_TYPE");
+        inline static const LexemeItem STR_TYPE = LexemeItem("STR_TYPE");
+        inline static const LexemeItem ANEF = LexemeItem("ANEF");
+        inline static const LexemeItem EGO = LexemeItem("EGO");
+        inline static const LexemeItem INITUS = LexemeItem("INITUS");
+        inline static const LexemeItem EXODUS = LexemeItem("EXODUS");
+        inline static const LexemeItem PLUS = LexemeItem("PLUS");
+        inline static const LexemeItem MINUS = LexemeItem("MINUS");
+        inline static const LexemeItem DIV = LexemeItem("DIV");
+        inline static const LexemeItem TIMES = LexemeItem("TIMES");
+        inline static const LexemeItem LPAREN = LexemeItem("LPAREN");
+        inline static const LexemeItem RPAREN = LexemeItem("RPAREN");
+        inline static const LexemeItem LBRACK = LexemeItem("LBRACK");
+        inline static const LexemeItem RBRACK = LexemeItem("RBRACK");
+        inline static const LexemeItem COLON = LexemeItem("COLON");
+        inline static const LexemeItem SEMICOLON = LexemeItem("SEMICOLON");
+        inline static const LexemeItem DOT = LexemeItem("DOT");
+        inline static const LexemeItem COMMA = LexemeItem("COMMA");
+        inline static const LexemeItem EQUAL = LexemeItem("EQUAL");
+        inline static const LexemeItem ID = LexemeItem("ID");
+        inline static const LexemeItem INT = LexemeItem("INT");
+        inline static const LexemeItem DUPL = LexemeItem("DUPL");
+        inline static const LexemeItem STR = LexemeItem("STR");
 
         static std::string semantic[];
 };
