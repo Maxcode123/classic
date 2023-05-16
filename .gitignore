@@ -56,3 +56,4 @@ bin/*
 .vscode
 classical.tab.c
 classical.tab.h
+lex.yy.c
