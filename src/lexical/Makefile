@@ -11,3 +11,6 @@ $(OBJ)/%.o: $(SRC)/lexical/%.cpp
 
 $(OBJ)/%.o: $(SRC)/lexical/%.c
 	$(CC) $(ARGS) -c $< -o $@
+
+clean-lexical:
+	$(RM) src/lexical/lex.yy.c src/lexical/lex.h

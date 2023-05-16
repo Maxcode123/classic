@@ -43,9 +43,3 @@ clean-binaries:
 
 clean-object:
 	$(RM) obj/*
-
-clean-lexical:
-	$(RM) src/lexical/lex.yy.c src/lexical/lex.h
-
-clean-syntax:
-	$(RM) src/syntax/classical.tab.c src/syntax/classical.output
