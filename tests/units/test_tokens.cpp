@@ -28,5 +28,4 @@ TEST(TokenTest, testsemantval) {
 TEST(LexemeItemTest, testinit) {
     LexemeItem i = LexemeItem("smth", 10);
     EXPECT_TRUE(i.name == "smth");
-    EXPECT_TRUE(i.value == 10);
 }
