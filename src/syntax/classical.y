@@ -58,7 +58,8 @@ custom-type:
     ID
 
 class-body:
-    attr-decl-list func-list
+    attr-decl-list
+    | attr-decl-list func-list
 
 attr-decl-list:
     %empty
@@ -78,14 +79,14 @@ type:
     | custom-type
 
 funcs:
-    func-list initus-func
+    initus-func
+    | func-list initus-func
 
 initus-func:
     OPER COLON INT_TYPE INITUS LPAREN RPAREN LBRACK func-body RBRACK
 
 func-list:
-    %empty
-    | func
+    func
     | func-list func
 
 func:
@@ -138,7 +139,10 @@ exp:
     | literal
 
 binop-exp:
-    exp binop exp
+    exp PLUS exp
+    | exp MINUS exp
+    | exp DIV exp
+    | exp TIMES exp
 
 func-call:
     ids LPAREN arg-list RPAREN
@@ -153,12 +157,6 @@ non-empty-arg-list:
 
 arg:
     ID EQUAL exp
-
-binop:
-    PLUS
-    | MINUS
-    | DIV
-    | TIMES
 
 literal:
     INT

@@ -2,7 +2,7 @@ exemp: Position {
 	int x;
 	int y;
 	Position(int x, int y) {ego.x = x; ego.y = y;}
-	anef move(int dx, int dy) {ego.x = ego.x + dx;, ego.y = ego.y + dy;}
+	anef move(int dx, int dy) {ego.x = ego.x + dx; ego.y = ego.y + dy;}
 }
 
 oper: Position pos1() {
