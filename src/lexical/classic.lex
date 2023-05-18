@@ -58,7 +58,7 @@ double [-+]?[0-9]+\.?[0-9]*
 <INITIAL>"=" {adjust(); current_token = Token(Lexeme::EQUAL.name); return Lexeme::EQUAL.value();}
 
 <INITIAL>" " {adjust(); continue;}
-<INITIAL>\n	 {adjust(); continue;}
+<INITIAL>\n	 {adjust(); yylineno++; _pos=1; continue;}
 <INITIAL>\t {adjust(); continue;}
 <INITIAL>.	 {adjust(); fprintf(stderr, "illegal token");}
 
