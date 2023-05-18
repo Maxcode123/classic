@@ -1,6 +1,9 @@
-%{
-
-%}
+%code top {
+    #include <string>
+    using namespace std;
+    int yylex(void);
+    void yyerror(std::string);
+}
 
 %union {
     int ival;

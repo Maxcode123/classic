@@ -17,6 +17,9 @@ include tests/Makefile
 run-lexer: $(BIN)/lexer
 	$< $(FILE)
 
+run-parser: $(BIN)/parser
+	$< $(FILE)
+
 run-file: $(TEST)/bin/main
 	clear
 	$< $(FILE)

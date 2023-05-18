@@ -1,8 +1,18 @@
+parser: $(BIN)/parser
 
-parser: $(SRC)/syntax/classical.tab.c
+$(BIN)/parser: $(OBJ)/classical.tab.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o $(OBJ)/parse.o
+	$(CC) $(ARGS) $^ -o $@
+
+bison: $(SRC)/syntax/classical.tab.c
 
 $(SRC)/syntax/classical.tab.c: $(SRC)/syntax/classical.y
 	bison $< -H -Wcounterexamples -o $@
 
+$(OBJ)/%.o: $(SRC)/syntax/%.cpp
+	$(CC) $(ARGS) -c $< -o $@
+
+$(OBJ)/%.o: $(SRC)/syntax/%.c
+	$(CC) $(ARGS) -c $< -o $@
+
 clean-syntax:
-	$(RM) src/syntax/classical.tab.c src/syntax/classical.tab.h src/syntax/classical.output
+	$(RM) src/syntax/classical.tab.c
