@@ -1,6 +1,6 @@
 #include "tokens.h"
 
-int LexemeItem::value() const {return _value + lexeme_base;}
+void LexemeItem::set_value(int val) {value = val;}
 
 std::string Lexeme::semantic[] = {
     Lexeme::ID.name,
@@ -15,5 +15,3 @@ std::string Token::semantval() {
     }
     return "";
 }
-
-void set_lexeme_base(int b) {lexeme_base = b;}
