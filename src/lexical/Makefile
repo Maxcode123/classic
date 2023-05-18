@@ -1,6 +1,6 @@
 lexer: $(BIN)/lexer
 
-$(BIN)/lexer: $(OBJ)/scan.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o
+$(BIN)/lexer: $(OBJ)/lex_main.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o
 	$(CC) $(ARGS) $^ -o $@
 
 $(SRC)/lexical/lex.yy.c: $(SRC)/lexical/classic.lex
