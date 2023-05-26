@@ -12,7 +12,7 @@ extern FILE *yyin;
 
 extern int yylineno;
 
-Token current_token;
+extern Token current_token;
 
 int pos = 0;
 

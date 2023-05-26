@@ -1,6 +1,6 @@
 parser: $(BIN)/parser
 
-$(BIN)/parser: $(OBJ)/classical.tab.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o $(OBJ)/parse.o
+$(BIN)/parser: $(OBJ)/classical.tab.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o $(OBJ)/parse_main.o $(OBJ)/parse.o
 	$(CC) $(ARGS) $^ -o $@
 
 bison: $(SRC)/syntax/classical.tab.c

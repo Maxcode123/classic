@@ -5,6 +5,7 @@
 
 #include "tokens.h"
 
+Token current_token;
 extern int pos;
 int _pos=1;
 

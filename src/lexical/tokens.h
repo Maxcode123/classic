@@ -63,5 +63,3 @@ class Token {
     private:
         std::string semant_str;
 };
-
-extern Token current_token;

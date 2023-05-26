@@ -3,6 +3,7 @@
     using namespace std;
     int yylex(void);
     void yyerror(std::string);
+    int pos = 0;
 }
 
 %union {
