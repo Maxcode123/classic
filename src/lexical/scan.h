@@ -10,8 +10,10 @@ using namespace std;
 
 extern FILE *yyin;
 
-Token yylval;
+extern int yylineno;
 
-int pos = 0;
+extern Token current_token;
+
+extern int pos;
 
 int yylex(void); /* prototype for the lexing function */

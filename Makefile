@@ -2,37 +2,47 @@ CC=g++
 SRC=src
 BIN=bin
 OBJ=obj
-ARGS=-g
+ARGS=-g -Wno-write-strings -Werror
 TEST=tests
 DB=gdb
 FILE=$(TEST)/test.classic
+RM=rm -rf
 
 
 include src/lexical/Makefile
+include src/syntax/Makefile
 include tests/Makefile
 
+.DEFAULT_GOAL := all
 
+.PHONY: all
+all: lexer parser
+
+.PHONY: all
+install:
+	cp bin/parser /usr/bin/classic
+
+.PHONY: test
+test: unit-test integration-test
+
+.PHONY: run-lexer
 run-lexer: $(BIN)/lexer
 	$< $(FILE)
 
-debug-file: $(TEST)/bin/main
-	clear
-	$(DB) --args $< $(FILE)
-
-debug: $(TEST)/bin/main
-	clear
-	$(DB) $<
-
-run-file: $(TEST)/bin/main
-	clear
+.PHONY: run-parser
+run-parser: $(BIN)/parser
 	$< $(FILE)
-
-run: $(TEST)/bin/main
-	clear
-	$<
 
 $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
-clean:
-	rm -rf obj/* bin/* src/lexical/lex.yy.c src/lexical/lex.h
+.PHONY: clean
+clean: clean-binaries clean-object clean-lexical clean-syntax
+
+.PHONY:clean-binaries
+clean-binaries:
+	$(RM) bin/*
+
+.PHONY:clean-object
+clean-object:
+	$(RM) obj/*

@@ -1,13 +1,7 @@
-oper: int  myfunc(int a, int b) {
-	return a + b;
+oper: int simple_function(int myint) {
+	exodus myint;
 }
 
-exemp: MyType {
-	int field1;
-	series field2;
-	anef meth1();
-}
-
-MyType\anef meth1() {
-	return 2.3439;
+oper: int initus() {
+	exodus simple_function(myint=0);
 }

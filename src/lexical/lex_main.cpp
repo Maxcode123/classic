@@ -2,6 +2,8 @@
 
 
 int main(int argc, char **argv) {
+    pos = 0;
+
     if (argc != 2) {
         fprintf(stderr, "usage: ./a.out filename\n");
         exit(1);
@@ -14,7 +16,7 @@ int main(int argc, char **argv) {
     for (;;) {
         i = yylex();
         if (i == 0) break;
-        std::cout << yylval.lexeme_str << " " << pos << " " << yylval.semantval() << "\n";
+        std::cout << yylineno << ": " << pos << "  " << current_token.lexeme_str << "  " << current_token.semantval() << "\n";
     }
     return 0;
 }

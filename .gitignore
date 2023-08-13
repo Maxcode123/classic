@@ -54,3 +54,5 @@ dkms.conf
 obj/*
 bin/*
 .vscode
+classical.tab.c
+lex.yy.c
