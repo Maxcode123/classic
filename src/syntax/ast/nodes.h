@@ -87,7 +87,7 @@ class TerminalASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "TerminalASTNode"; }
 };
 
-enum BuiltInType {
+enum BuiltinType {
   BUILTIN_INT_TYPE,
   BUILTIN_DUPL_TYPE,
   BUILTIN_STR_TYPE,
@@ -379,6 +379,7 @@ enum ExpressionType {
 class Expression_
     : virtual public BaseTypeASTNode_<Expression, ExpressionType> {
  public:
+  BuiltinType builtin_type;
   Expression_(ParenthesesExpression exp) {
     set(PARENTHESES_EXPRESSION, (Expression)exp);
   }
@@ -450,7 +451,7 @@ class FunctionCallExpression_ : virtual public Expression_ {
 class LiteralExpression_ : virtual public Expression_ {
  public:
   std::string literal_str;
-  BuiltInType type;
+  BuiltinType type;
   LiteralExpression_(int literal) {
     set(std::to_string(literal), BUILTIN_INT_TYPE);
   }
@@ -459,7 +460,7 @@ class LiteralExpression_ : virtual public Expression_ {
   }
   LiteralExpression_(std::string literal) { set(literal, BUILTIN_STR_TYPE); }
   LiteralExpression_(char *literal) { set(literal, BUILTIN_STR_TYPE); }
-  LiteralExpression_(BuiltInType type) {
+  LiteralExpression_(BuiltinType type) {
     if (type == BUILTIN_ANEF_TYPE)
       set("anef", type);
     else
@@ -471,7 +472,7 @@ class LiteralExpression_ : virtual public Expression_ {
 
  private:
   using Expression_::downcast;
-  void set(std::string str, BuiltInType t) { literal_str = str, type = t; }
+  void set(std::string str, BuiltinType t) { literal_str = str, type = t; }
 };
 
 class VariableExpression_ : virtual public Expression_ {
