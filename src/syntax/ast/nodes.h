@@ -13,6 +13,7 @@
 DECL_TYPEDEF(ASTNode)
 DECL_TYPEDEF(TerminalASTNode)
 DECL_TYPEDEF(BinaryOperatorASTNode)
+DECL_TYPEDEF(ClassicTypeASTNode)
 DECL_TYPEDEF(Program)
 DECL_TYPEDEF(ClassdefList)
 DECL_TYPEDEF(PairClassdefList)
@@ -107,6 +108,14 @@ class BinaryOperatorASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "BinaryOperatorASTNode"; }
 };
 
+class ClassicTypeASTNode_ : virtual public ASTNode_ {
+ public:
+  classic_types::Type classic_type;
+  ClassicTypeASTNode_(classic_types::Type type) { classic_type = type; }
+
+  static std::string cls() { return "ClassicTypeASTNode"; }
+};
+
 class Program_ : virtual public ASTNode_ {
  public:
   ClassdefList classdef_list;
@@ -194,16 +203,16 @@ class LastFunctionList_ : virtual public FunctionList_ {
 class Function_ : virtual public ASTNode_ {
  public:
   std::string name;
-  std::string return_type;
+  classic_types::Type return_type;
   ParamList param_list;
   FunctionBody body;
-  Function_(std::string n, std::string r, ParamList p, FunctionBody b) {
+  Function_(std::string n, classic_types::Type t, ParamList p, FunctionBody b) {
     name = n;
-    return_type = r;
+    return_type = t;
     param_list = p;
     body = b;
   }
-  Function_(char *n, char *r, ParamList p, FunctionBody b);
+  Function_(char *n, classic_types::Type t, ParamList p, FunctionBody b);
   Function_() {}
 
   static std::string cls() { return "Function"; }
@@ -265,13 +274,13 @@ class EmptyParamList_ : virtual public ParamList_ {
 
 class Param_ : virtual public ASTNode_ {
  public:
-  std::string type;
+  classic_types::Type classic_type;
   std::string name;
-  Param_(std::string t, std::string n) {
-    type = t;
+  Param_(classic_types::Type t, std::string n) {
+    classic_type = t;
     name = n;
   }
-  Param_(char *t, char *n);
+  Param_(classic_types::Type t, char *n);
   Param_() {}
 
   static std::string cls() { return "Param"; }

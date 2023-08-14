@@ -2,34 +2,27 @@
 
 ASTNode_::~ASTNode_() {}
 
-Function_::Function_(char* n, char* r, ParamList p, FunctionBody b) {
-  std::string _name, _return_type;
+Function_::Function_(char* n, classic_types::Type r, ParamList p,
+                     FunctionBody b) {
+  std::string _name;
   if (n == NULL)
     std::string _name("");
   else
     _name = n;
-  if (r == NULL)
-    std::string _return_type("");
-  else
-    _return_type = r;
 
   this->name = _name;
-  this->return_type = _return_type;
+  this->return_type = r;
   this->param_list = p;
   this->body = b;
 }
 
-Param_::Param_(char* t, char* n) {
-  std::string _type, _name;
-  if (t == NULL)
-    _type = "";
-  else
-    _type = t;
+Param_::Param_(classic_types::Type t, char* n) {
+  std::string _name;
   if (n == NULL)
     _name = "";
   else
     _name = n;
-  this->type = _type;
+  this->classic_type = t;
   this->name = _name;
 }
 
