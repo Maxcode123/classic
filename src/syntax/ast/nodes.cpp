@@ -2,8 +2,7 @@
 
 ASTNode_::~ASTNode_() {}
 
-Function_::Function_(char* n, classic_types::Type r, ParamList p,
-                     FunctionBody b) {
+Function_::Function_(char* n, ClassicType r, ParamList p, FunctionBody b) {
   std::string _name;
   if (n == NULL)
     std::string _name("");
@@ -16,7 +15,7 @@ Function_::Function_(char* n, classic_types::Type r, ParamList p,
   this->body = b;
 }
 
-Param_::Param_(classic_types::Type t, char* n) {
+Param_::Param_(ClassicType t, char* n) {
   std::string _name;
   if (n == NULL)
     _name = "";

@@ -13,7 +13,9 @@
 DECL_TYPEDEF(ASTNode)
 DECL_TYPEDEF(TerminalASTNode)
 DECL_TYPEDEF(BinaryOperatorASTNode)
-DECL_TYPEDEF(ClassicTypeASTNode)
+DECL_TYPEDEF(ClassicType)
+DECL_TYPEDEF(ClassicBuiltinType)
+DECL_TYPEDEF(ClassicCustomType)
 DECL_TYPEDEF(Program)
 DECL_TYPEDEF(ClassdefList)
 DECL_TYPEDEF(PairClassdefList)
@@ -88,7 +90,7 @@ class TerminalASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "TerminalASTNode"; }
 };
 
-namespace classic_types {
+namespace classic_builtin_types {
 enum Type {
   INT,
   DUPL,
@@ -108,12 +110,36 @@ class BinaryOperatorASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "BinaryOperatorASTNode"; }
 };
 
-class ClassicTypeASTNode_ : virtual public ASTNode_ {
- public:
-  classic_types::Type classic_type;
-  ClassicTypeASTNode_(classic_types::Type type) { classic_type = type; }
+enum ClassicTypeGroup { BUILTIN_TYPE, CUSTOM_TYPE };
 
-  static std::string cls() { return "ClassicTypeASTNode"; }
+class ClassicType_
+    : virtual public BaseTypeASTNode_<ClassicType, ClassicTypeGroup> {
+ public:
+  ClassicType_(ClassicBuiltinType n) { set(BUILTIN_TYPE, (ClassicType)n); };
+  ClassicType_(ClassicCustomType n) { set(CUSTOM_TYPE, (ClassicType)n); }
+  ClassicType_() {}
+
+  static std::string cls() { return "ClassicType"; }
+};
+
+class ClassicBuiltinType_ : virtual public ClassicType_ {
+ public:
+  classic_builtin_types::Type type;
+  ClassicBuiltinType_(classic_builtin_types::Type t) { type = t; }
+  ClassicType upcast() { return new ClassicType_(this); }
+
+ private:
+  using ClassicType_::downcast;
+};
+
+class ClassicCustomType_ : virtual public ClassicType_ {
+ public:
+  std::string type_name;
+  ClassicCustomType_(std::string n) { type_name = n; }
+  ClassicType upcast() { return new ClassicType_(this); }
+
+ private:
+  using ClassicType_::downcast;
 };
 
 class Program_ : virtual public ASTNode_ {
@@ -203,16 +229,16 @@ class LastFunctionList_ : virtual public FunctionList_ {
 class Function_ : virtual public ASTNode_ {
  public:
   std::string name;
-  classic_types::Type return_type;
+  ClassicType return_type;
   ParamList param_list;
   FunctionBody body;
-  Function_(std::string n, classic_types::Type t, ParamList p, FunctionBody b) {
+  Function_(std::string n, ClassicType t, ParamList p, FunctionBody b) {
     name = n;
     return_type = t;
     param_list = p;
     body = b;
   }
-  Function_(char *n, classic_types::Type t, ParamList p, FunctionBody b);
+  Function_(char *n, ClassicType t, ParamList p, FunctionBody b);
   Function_() {}
 
   static std::string cls() { return "Function"; }
@@ -274,13 +300,13 @@ class EmptyParamList_ : virtual public ParamList_ {
 
 class Param_ : virtual public ASTNode_ {
  public:
-  classic_types::Type classic_type;
+  ClassicType classic_type;
   std::string name;
-  Param_(classic_types::Type t, std::string n) {
+  Param_(ClassicType t, std::string n) {
     classic_type = t;
     name = n;
   }
-  Param_(classic_types::Type t, char *n);
+  Param_(ClassicType t, char *n);
   Param_() {}
 
   static std::string cls() { return "Param"; }
@@ -391,7 +417,7 @@ enum ExpressionType {
 class Expression_
     : virtual public BaseTypeASTNode_<Expression, ExpressionType> {
  public:
-  classic_types::Type classic_type;
+  ClassicType classic_type;
   Expression_(ParenthesesExpression exp) {
     set(PARENTHESES_EXPRESSION, (Expression)exp);
   }
@@ -463,17 +489,21 @@ class FunctionCallExpression_ : virtual public Expression_ {
 class LiteralExpression_ : virtual public Expression_ {
  public:
   std::string literal_str;
-  classic_types::Type classic_type;
+  classic_builtin_types::Type classic_builtin_type;
   LiteralExpression_(int literal) {
-    set(std::to_string(literal), classic_types::INT);
+    set(std::to_string(literal), classic_builtin_types::INT);
   }
   LiteralExpression_(double literal) {
-    set(std::to_string(literal), classic_types::DUPL);
+    set(std::to_string(literal), classic_builtin_types::DUPL);
   }
-  LiteralExpression_(std::string literal) { set(literal, classic_types::STR); }
-  LiteralExpression_(char *literal) { set(literal, classic_types::STR); }
-  LiteralExpression_(classic_types::Type type) {
-    if (type == classic_types::ANEF)
+  LiteralExpression_(std::string literal) {
+    set(literal, classic_builtin_types::STR);
+  }
+  LiteralExpression_(char *literal) {
+    set(literal, classic_builtin_types::STR);
+  }
+  LiteralExpression_(classic_builtin_types::Type type) {
+    if (type == classic_builtin_types::ANEF)
       set("anef", type);
     else
       set("", type);
@@ -484,8 +514,8 @@ class LiteralExpression_ : virtual public Expression_ {
 
  private:
   using Expression_::downcast;
-  void set(std::string str, classic_types::Type t) {
-    literal_str = str, classic_type = t;
+  void set(std::string str, classic_builtin_types::Type t) {
+    literal_str = str, classic_builtin_type = t;
   }
 };
 

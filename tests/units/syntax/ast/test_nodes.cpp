@@ -3,14 +3,17 @@
 #include "../../../../src/syntax/ast/nodes.h"
 
 TEST(NodesConstructorTest, TestParamConstructor) {
-  Param p = new Param_(classic_types::INT, "myint");
-  EXPECT_TRUE(p->classic_type == classic_types::INT);
+  Param p = new Param_(
+      (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast(), "myint");
+  EXPECT_TRUE(p->classic_type->type == BUILTIN_TYPE);
   EXPECT_TRUE(p->name == "myint");
 }
 
 TEST(NodesConstructorTest, TestParamListConstructor) {
-  LastParamList l = new LastParamList_(new Param_(classic_types::STR, "mystr"));
-  EXPECT_TRUE(l->param->classic_type == classic_types::STR);
+  LastParamList l = new LastParamList_(new Param_(
+      (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast(),
+      "mystr"));
+  EXPECT_TRUE(l->param->classic_type->type == BUILTIN_TYPE);
   EXPECT_TRUE(l->param->name == "mystr");
 }
 
