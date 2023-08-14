@@ -87,6 +87,13 @@ class TerminalASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "TerminalASTNode"; }
 };
 
+enum BuiltInType {
+  BUILTIN_INT_TYPE,
+  BUILTIN_DUPL_TYPE,
+  BUILTIN_STR_TYPE,
+  BUILTIN_ANEF_TYPE
+};
+
 enum BinaryOperator { BINARY_PLUS, BINARY_MINUS, BINARY_DIV, BINARY_TIMES };
 
 class BinaryOperatorASTNode_ : virtual public ASTNode_ {
@@ -443,17 +450,28 @@ class FunctionCallExpression_ : virtual public Expression_ {
 class LiteralExpression_ : virtual public Expression_ {
  public:
   std::string literal_str;
-  LiteralExpression_(int literal) { literal_str = std::to_string(literal); }
-  LiteralExpression_(double literal) { literal_str = std::to_string(literal); }
-  LiteralExpression_(std::string literal) { literal_str = literal; }
-  LiteralExpression_(char *literal) { literal_str = literal; }
-  LiteralExpression_(std::nullptr_t literal) { literal_str = "anef"; }
+  BuiltInType type;
+  LiteralExpression_(int literal) {
+    set(std::to_string(literal), BUILTIN_INT_TYPE);
+  }
+  LiteralExpression_(double literal) {
+    set(std::to_string(literal), BUILTIN_DUPL_TYPE);
+  }
+  LiteralExpression_(std::string literal) { set(literal, BUILTIN_STR_TYPE); }
+  LiteralExpression_(char *literal) { set(literal, BUILTIN_STR_TYPE); }
+  LiteralExpression_(BuiltInType type) {
+    if (type == BUILTIN_ANEF_TYPE)
+      set("anef", type);
+    else
+      set("", type);
+  }
   LiteralExpression_() {}
   Expression upcast() { return new Expression_(this); }
   static std::string cls() { return "LiteralExpression"; }
 
  private:
   using Expression_::downcast;
+  void set(std::string str, BuiltInType t) { literal_str = str, type = t; }
 };
 
 class VariableExpression_ : virtual public Expression_ {
