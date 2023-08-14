@@ -87,11 +87,14 @@ class TerminalASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "TerminalASTNode"; }
 };
 
-enum BuiltinType {
-  BUILTIN_INT_TYPE,
-  BUILTIN_DUPL_TYPE,
-  BUILTIN_STR_TYPE,
-  BUILTIN_ANEF_TYPE
+namespace classic_types {
+enum Type {
+  INT,
+  DUPL,
+  STR,
+  ANEF,
+  CUSTOM,
+};
 };
 
 enum BinaryOperator { BINARY_PLUS, BINARY_MINUS, BINARY_DIV, BINARY_TIMES };
@@ -379,7 +382,7 @@ enum ExpressionType {
 class Expression_
     : virtual public BaseTypeASTNode_<Expression, ExpressionType> {
  public:
-  BuiltinType builtin_type;
+  classic_types::Type classic_type;
   Expression_(ParenthesesExpression exp) {
     set(PARENTHESES_EXPRESSION, (Expression)exp);
   }
@@ -451,17 +454,17 @@ class FunctionCallExpression_ : virtual public Expression_ {
 class LiteralExpression_ : virtual public Expression_ {
  public:
   std::string literal_str;
-  BuiltinType type;
+  classic_types::Type classic_type;
   LiteralExpression_(int literal) {
-    set(std::to_string(literal), BUILTIN_INT_TYPE);
+    set(std::to_string(literal), classic_types::INT);
   }
   LiteralExpression_(double literal) {
-    set(std::to_string(literal), BUILTIN_DUPL_TYPE);
+    set(std::to_string(literal), classic_types::DUPL);
   }
-  LiteralExpression_(std::string literal) { set(literal, BUILTIN_STR_TYPE); }
-  LiteralExpression_(char *literal) { set(literal, BUILTIN_STR_TYPE); }
-  LiteralExpression_(BuiltinType type) {
-    if (type == BUILTIN_ANEF_TYPE)
+  LiteralExpression_(std::string literal) { set(literal, classic_types::STR); }
+  LiteralExpression_(char *literal) { set(literal, classic_types::STR); }
+  LiteralExpression_(classic_types::Type type) {
+    if (type == classic_types::ANEF)
       set("anef", type);
     else
       set("", type);
@@ -472,7 +475,9 @@ class LiteralExpression_ : virtual public Expression_ {
 
  private:
   using Expression_::downcast;
-  void set(std::string str, BuiltinType t) { literal_str = str, type = t; }
+  void set(std::string str, classic_types::Type t) {
+    literal_str = str, classic_type = t;
+  }
 };
 
 class VariableExpression_ : virtual public Expression_ {

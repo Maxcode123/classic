@@ -258,7 +258,7 @@ literal:
     _INT { builder.build_literal_expression(std::stoi(current_token.semantval())); update_ast(); }
     | _DUPL { builder.build_literal_expression(std::stod(current_token.semantval())); update_ast(); }
     | _STR { builder.build_literal_expression(current_token.semantval()); update_ast(); }
-    | _ANEF { builder.build_literal_expression(BUILTIN_ANEF_TYPE); update_ast(); }
+    | _ANEF { builder.build_literal_expression(classic_types::ANEF); update_ast(); }
 
 variable:
     _ID { builder.build_variable_expression(current_token.semantval()); update_ast(); }

@@ -34,6 +34,10 @@ run-lexer: $(BIN)/lexer
 run-parser: $(BIN)/parser
 	$< $(FILE)
 
+.PHONY: run-generator
+run-generator: $(BIN)/generator
+	$< $(FILE)
+
 $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
