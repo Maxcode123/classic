@@ -5,80 +5,47 @@
 #include <stack>
 #include <string>
 
-// forward declarations
-class ASTNode_;
-class TerminalASTNode_;
-class BinaryOperatorASTNode_;
-class Program_;
-class ClassdefList_;
-class PairClassdefList_;
-class LastClassdefList_;
-class EmptyClassdefList_;
-class Classdef_;
-class FunctionList_;
-class PairFunctionList_;
-class LastFunctionList_;
-class Function_;
-class ParamList_;
-class PairParamList_;
-class LastParamList_;
-class EmptyParamList_;
-class Param_;
-class FunctionBody_;
-class Statement_;
-class CompoundStatement_;
-class AssignStatement_;
-class ExpressionStatement_;
-class EmptyStatement_;
-class ExodusStatement_;
-class Expression_;
-class ParenthesesExpression_;
-class BinaryOperationExpression_;
-class FunctionCallExpression_;
-class LiteralExpression_;
-class VariableExpression_;
-class ArgumentList_;
-class PairArgumentList_;
-class LastArgumentList_;
-class EmptyArgumentList_;
-class Argument_;
+#define DECL_TYPEDEF(cls) \
+  class cls##_;           \
+  typedef cls##_ *cls;
 
-typedef ASTNode_ *ASTNode;
-typedef TerminalASTNode_ *TerminalASTNode;
-typedef BinaryOperatorASTNode_ *BinaryOperatorASTNode;
-typedef Program_ *Program;
-typedef ClassdefList_ *ClassdefList;
-typedef PairClassdefList_ *PairClassdefList;
-typedef LastClassdefList_ *LastClassdefList;
-typedef EmptyClassdefList_ *EmptyClassdefList;
-typedef Classdef_ *Classdef;
-typedef FunctionList_ *FunctionList;
-typedef PairFunctionList_ *PairFunctionList;
-typedef LastFunctionList_ *LastFunctionList;
-typedef Function_ *Function;
-typedef ParamList_ *ParamList;
-typedef PairParamList_ *PairParamList;
-typedef LastParamList_ *LastParamList;
-typedef EmptyParamList_ *EmptyParamList;
-typedef Param_ *Param;
-typedef FunctionBody_ *FunctionBody;
-typedef Statement_ *Statement;
-typedef CompoundStatement_ *CompoundStatement;
-typedef AssignStatement_ *AssignStatement;
-typedef ExpressionStatement_ *ExpressionStatement;
-typedef EmptyStatement_ *EmptyStatement;
-typedef ExodusStatement_ *ExodusStatement;
-typedef Expression_ *Expression;
-typedef ParenthesesExpression_ *ParenthesesExpression;
-typedef BinaryOperationExpression_ *BinaryOperationExpression;
-typedef FunctionCallExpression_ *FunctionCallExpression;
-typedef LiteralExpression_ *LiteralExpression;
-typedef VariableExpression_ *VariableExpression;
-typedef ArgumentList_ *ArgumentList;
-typedef PairArgumentList_ *PairArgumentList;
-typedef LastArgumentList_ *LastArgumentList;
-typedef EmptyArgumentList_ *EmptyArgumentList;
-typedef Argument_ *Argument;
+// forward declarations
+DECL_TYPEDEF(ASTNode)
+DECL_TYPEDEF(TerminalASTNode)
+DECL_TYPEDEF(BinaryOperatorASTNode)
+DECL_TYPEDEF(Program)
+DECL_TYPEDEF(ClassdefList)
+DECL_TYPEDEF(PairClassdefList)
+DECL_TYPEDEF(LastClassdefList)
+DECL_TYPEDEF(EmptyClassdefList)
+DECL_TYPEDEF(Classdef)
+DECL_TYPEDEF(FunctionList)
+DECL_TYPEDEF(PairFunctionList)
+DECL_TYPEDEF(LastFunctionList)
+DECL_TYPEDEF(Function)
+DECL_TYPEDEF(ParamList)
+DECL_TYPEDEF(PairParamList)
+DECL_TYPEDEF(LastParamList)
+DECL_TYPEDEF(EmptyParamList)
+DECL_TYPEDEF(Param)
+DECL_TYPEDEF(FunctionBody)
+DECL_TYPEDEF(Statement)
+DECL_TYPEDEF(CompoundStatement)
+DECL_TYPEDEF(AssignStatement)
+DECL_TYPEDEF(ExpressionStatement)
+DECL_TYPEDEF(EmptyStatement)
+DECL_TYPEDEF(ExodusStatement)
+DECL_TYPEDEF(Expression)
+DECL_TYPEDEF(ParenthesesExpression)
+DECL_TYPEDEF(BinaryOperationExpression)
+DECL_TYPEDEF(FunctionCallExpression)
+DECL_TYPEDEF(LiteralExpression)
+DECL_TYPEDEF(VariableExpression)
+DECL_TYPEDEF(ArgumentList)
+DECL_TYPEDEF(PairArgumentList)
+DECL_TYPEDEF(LastArgumentList)
+DECL_TYPEDEF(EmptyArgumentList)
+DECL_TYPEDEF(Argument)
 
 /* Interface for Nodes of the Abstract Syntax Tree (AST). */
 class ASTNode_ {
