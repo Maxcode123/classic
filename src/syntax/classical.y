@@ -131,7 +131,7 @@ classdef:
     _EXEMP _COLON custom-type _LBRACK class-body _RBRACK
 
 custom-type:
-    _ID { builder.store(current_token.semantval()); update_ast(); }
+    _ID { builder.build_custom_type(current_token.semantval()); update_ast(); }
 
 class-body:
     attr-decl-list
@@ -149,9 +149,9 @@ attr-decl:
     type _ID _SEMICOLON
 
 type:
-    _INT_TYPE { builder.store("int"); update_ast(); }
-    | _DUPL_TYPE { builder.store("dupl"); update_ast(); }
-    | _STR_TYPE { builder.store("str"); update_ast(); }
+    _INT_TYPE { builder.build_builtin_type(classic_builtin_types::INT); update_ast(); }
+    | _DUPL_TYPE { builder.build_builtin_type(classic_builtin_types::DUPL); update_ast(); }
+    | _STR_TYPE { builder.build_builtin_type(classic_builtin_types::STR); update_ast(); }
     | custom-type
 
 funcs:
@@ -172,7 +172,7 @@ func-id:
     _ID { builder.store(current_token.semantval()); update_ast(); }
 
 exodus-type:
-    _ANEF { builder.store("anef"); update_ast(); }
+    _ANEF { builder.build_builtin_type(classic_builtin_types::ANEF); update_ast(); }
     | type
 
 param-list:
@@ -258,7 +258,7 @@ literal:
     _INT { builder.build_literal_expression(std::stoi(current_token.semantval())); update_ast(); }
     | _DUPL { builder.build_literal_expression(std::stod(current_token.semantval())); update_ast(); }
     | _STR { builder.build_literal_expression(current_token.semantval()); update_ast(); }
-    | _ANEF { builder.build_literal_expression(classic_types::ANEF); update_ast(); }
+    | _ANEF { builder.build_literal_expression(classic_builtin_types::ANEF); update_ast(); }
 
 variable:
     _ID { builder.build_variable_expression(current_token.semantval()); update_ast(); }

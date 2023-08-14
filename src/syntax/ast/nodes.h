@@ -96,7 +96,6 @@ enum Type {
   DUPL,
   STR,
   ANEF,
-  CUSTOM,
 };
 };
 

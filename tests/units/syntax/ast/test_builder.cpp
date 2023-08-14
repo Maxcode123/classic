@@ -41,6 +41,9 @@ class ASTBuilderTest : public testing::Test {
     this->builder = ASTBuilder(ASTStackProxy(this->stack));
   }
   void push(std::string str) { this->stack->push(new TerminalASTNode_(str)); }
+  void push(classic_builtin_types::Type t) {
+    this->stack->push((new ClassicBuiltinType_(t))->upcast());
+  }
   void push(ASTNode n) { this->stack->push(n); }
   template <class T_base, class T>
   T pop() {
@@ -454,17 +457,17 @@ TEST_F(ASTBuilderTest, TestBuildCompoundStatementSecondExpressionEmptyStack) {
 }
 
 TEST_F(ASTBuilderTest, TestBuildParam) {
-  this->push("int");
+  this->push(classic_builtin_types::INT);
   this->push("counter");
 
   Param p = this->builder.build_param();
 
-  EXPECT_EQ(p->type, "int");
+  EXPECT_EQ(p->classic_type->type, BUILTIN_TYPE);
   EXPECT_EQ(p->name, "counter");
 }
 
 TEST_F(ASTBuilderTest, TestBuildParamPushes) {
-  this->push("int");
+  this->push(classic_builtin_types::INT);
   this->push("counter");
 
   Param p = this->builder.build_param();
@@ -473,7 +476,7 @@ TEST_F(ASTBuilderTest, TestBuildParamPushes) {
 }
 
 TEST_F(ASTBuilderTest, TestBuildParamInvalidFirstTerminalNode) {
-  this->push("dupl");
+  this->push(classic_builtin_types::DUPL);
   this->push(new Argument_());  // invalid terminal node 'name'
 
   EXPECT_AST_BUILD_ERROR(this->builder.build_param());

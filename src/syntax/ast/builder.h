@@ -90,7 +90,9 @@ class ASTBuilder {
   ASTBuilder(ASTStackProxy proxy) { stack_proxy = proxy; }
   ASTBuilder() {}
 
-  void build_program();
+  // types
+  ClassicBuiltinType build_builtin_type(classic_builtin_types::Type t);
+  ClassicCustomType build_custom_type(std::string type_name);
 
   // classdefs
   PairClassdefList build_pair_classdef_list();
@@ -125,6 +127,7 @@ class ASTBuilder {
   LiteralExpression build_literal_expression(int literal);
   LiteralExpression build_literal_expression(double literal);
   LiteralExpression build_literal_expression(std::string literal);
+  LiteralExpression build_literal_expression(classic_builtin_types::Type t);
   VariableExpression build_variable_expression(std::string var_name);
 
   // arguments

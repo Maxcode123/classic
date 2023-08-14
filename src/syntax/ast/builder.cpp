@@ -27,6 +27,19 @@ correct type. */
     THROW_AST_BUILD_ERROR_INVALID_AST_NODE(type, p_type##_::cls()); \
   }
 
+ClassicBuiltinType ASTBuilder::build_builtin_type(
+    classic_builtin_types::Type t) {
+  ClassicBuiltinType builtin = new ClassicBuiltinType_(t);
+  this->push(builtin->upcast());
+  return builtin;
+}
+
+ClassicCustomType ASTBuilder::build_custom_type(std::string type_name) {
+  ClassicCustomType custom = new ClassicCustomType_(type_name);
+  this->push(custom->upcast());
+  return custom;
+}
+
 PairFunctionList ASTBuilder::build_pair_function_list() {
   TRY_CATCH_POP("PairFunctionList", Function, func)
   TRY_CATCH_POP("PairFunctionList", FunctionList, func_list)
@@ -52,9 +65,9 @@ Function ASTBuilder::build_function() {
   TRY_CATCH_POP("Function", FunctionBody, body)
   TRY_CATCH_POP("Function", ParamList, param_list)
   TRY_CATCH_POP("Function", TerminalASTNode, func_name)
-  TRY_CATCH_POP("Function", TerminalASTNode, exodus_type)
-  Function func = new Function_(func_name->semantic_value,
-                                exodus_type->semantic_value, param_list, body);
+  TRY_CATCH_POP("Function", ClassicType, exodus_type)
+  Function func =
+      new Function_(func_name->semantic_value, exodus_type, param_list, body);
   this->push(func);
 #ifdef DEBUG_MODE
   std::cout << "built Function " << func_name->semantic_value << "\n";
@@ -64,7 +77,9 @@ Function ASTBuilder::build_function() {
 
 Function ASTBuilder::build_initus_function() {
   TRY_CATCH_POP("InitusFunction", FunctionBody, body)
-  Function initus = new Function_("initus", "int", new EmptyParamList_(), body);
+  Function initus = new Function_(
+      "initus", (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast(),
+      new EmptyParamList_(), body);
   this->push(initus);
 #ifdef DEBUG_MODE
   std::cout << "built initus function\n";
@@ -115,8 +130,8 @@ EmptyParamList ASTBuilder::build_empty_param_list() {
 
 Param ASTBuilder::build_param() {
   TRY_CATCH_POP("Param", TerminalASTNode, name)
-  TRY_CATCH_POP("Param", TerminalASTNode, type)
-  Param p = new Param_(type->semantic_value, name->semantic_value);
+  TRY_CATCH_POP("Param", ClassicType, type)
+  Param p = new Param_(type, name->semantic_value);
   this->push(p);
 #ifdef DEBUG_MODE
   std::cout << "built Param " << type->semantic_value << " "
@@ -235,6 +250,16 @@ LiteralExpression ASTBuilder::build_literal_expression(std::string literal) {
   this->push(exp->upcast());
 #ifdef DEBUG_MODE
   std::cout << "built string LiteralExpression\n";
+#endif
+  return exp;
+}
+
+LiteralExpression ASTBuilder::build_literal_expression(
+    classic_builtin_types::Type t) {
+  LiteralExpression exp = new LiteralExpression_(t);
+  this->push(exp->upcast());
+#ifdef DEBUG_MODE
+  std::cout << "built builtin type literal expression\n";
 #endif
   return exp;
 }
