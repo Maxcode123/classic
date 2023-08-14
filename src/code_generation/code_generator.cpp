@@ -1,5 +1,40 @@
 #include "code_generator.h"
 
+std::vector<llvm::Type*> CodeGenerator::generate(ParamList param_list) {
+  if (param_list->type == LAST_PARAM_LIST)
+    return this->generate(param_list->downcast<LastParamList>());
+  else
+    return this->generate(param_list->downcast<PairParamList>());
+}
+
+std::vector<llvm::Type*> CodeGenerator::generate(PairParamList param_list) {
+  std::vector<llvm::Type*> params{this->generate(param_list->param)};
+  std::vector<llvm::Type*> next = this->generate(param_list->next);
+  params.insert(params.begin(), next.begin(), next.end());
+  return params;
+}
+
+std::vector<llvm::Type*> CodeGenerator::generate(LastParamList param_list) {
+  std::vector<llvm::Type*> params{this->generate(param_list->param)};
+  return params;
+}
+
+llvm::Type* CodeGenerator::generate(Param param) {
+  if (param->classic_type->type == BUILTIN_TYPE) {
+    ClassicBuiltinType builtin_type =
+        param->classic_type->downcast<ClassicBuiltinType>();
+    switch (builtin_type->type) {
+      case classic_builtin_types::INT:
+        return llvm::Type::getInt64Ty(*the_context);
+      case classic_builtin_types::DUPL:
+        return llvm::Type::getDoubleTy(*the_context);
+      case classic_builtin_types::ANEF:
+        return llvm::Type::getInt1Ty(*the_context);
+    }
+  }
+  return nullptr;
+}
+
 llvm::Value* CodeGenerator::generate(ExpressionStatement stm) {
   return this->generate(stm->expression);
 }
@@ -26,14 +61,14 @@ llvm::Value* CodeGenerator::generate(Expression exp) {
 }
 
 llvm::Value* CodeGenerator::generate(LiteralExpression exp) {
-  switch (exp->type) {
-    case BUILTIN_INT_TYPE:
+  switch (exp->classic_builtin_type) {
+    case classic_builtin_types::INT:
       return llvm::ConstantInt::get(*the_context,
                                     llvm::APSInt(std::stoi(exp->literal_str)));
-    case BUILTIN_DUPL_TYPE:
+    case classic_builtin_types::DUPL:
       return llvm::ConstantFP::get(*the_context,
                                    llvm::APFloat(std::stof(exp->literal_str)));
-    case BUILTIN_ANEF_TYPE:
+    case classic_builtin_types::ANEF:
       return llvm::ConstantInt::get(*the_context, llvm::APInt(1, 0, false));
   };
   return nullptr;

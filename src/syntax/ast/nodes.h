@@ -512,7 +512,9 @@ class LiteralExpression_ : virtual public Expression_ {
   static std::string cls() { return "LiteralExpression"; }
 
  private:
+  using Expression_::classic_type;
   using Expression_::downcast;
+
   void set(std::string str, classic_builtin_types::Type t) {
     literal_str = str, classic_builtin_type = t;
   }
