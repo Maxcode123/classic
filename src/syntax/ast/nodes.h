@@ -1,9 +1,13 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
+#include <iterator>
 #include <stack>
 #include <string>
+
+#include "errors.h"
 
 #define DECL_TYPEDEF(cls) \
   class cls##_;           \
@@ -247,6 +251,8 @@ enum ParamListType { PAIR_PARAM_LIST, LAST_PARAM_LIST, EMPTY_PARAM_LIST };
 
 class ParamList_ : virtual public BaseTypeASTNode_<ParamList, ParamListType> {
  public:
+  Param param;
+
   ParamList_(PairParamList param_list) {
     set(PAIR_PARAM_LIST, (ParamList)param_list);
   }
@@ -263,7 +269,6 @@ class ParamList_ : virtual public BaseTypeASTNode_<ParamList, ParamListType> {
 
 class PairParamList_ : virtual public ParamList_ {
  public:
-  Param param;
   ParamList next;
   PairParamList_(ParamList n, Param p) {
     param = p;
@@ -278,7 +283,6 @@ class PairParamList_ : virtual public ParamList_ {
 
 class LastParamList_ : virtual public ParamList_ {
  public:
-  Param param;
   LastParamList_(Param p) { param = p; }
   ParamList upcast() { return new ParamList_(this); }
   static std::string cls() { return "LastParamList"; }
@@ -295,6 +299,64 @@ class EmptyParamList_ : virtual public ParamList_ {
 
  private:
   using ParamList_::downcast;
+};
+
+class ParamListIterator {
+ public:
+  using iterator_category = std::forward_iterator_tag;
+  using difference_type = std::ptrdiff_t;
+  using value_type = Param_;
+  using pointer = value_type *;
+  using reference = value_type &;
+
+  ParamListIterator(ParamList p) { param_list = p; }
+
+  reference operator*() const {
+    if (this->param_list == nullptr) {
+      throw IteratorError("Cannot dereference empty param list iterator.");
+    }
+    if (this->param_list->type == PAIR_PARAM_LIST) {
+      return *(this->param_list->downcast<PairParamList>()->param);
+    } else {
+      return *(this->param_list->downcast<LastParamList>()->param);
+    }
+  }
+  pointer operator->() {
+    if (this->param_list == nullptr) {
+      throw IteratorError("Cannot reference empty param list iterator.");
+    }
+    if (this->param_list->type == PAIR_PARAM_LIST) {
+      return this->param_list->downcast<PairParamList>()->param;
+    } else {
+      return this->param_list->downcast<LastParamList>()->param;
+    }
+  }
+
+  ParamListIterator &operator++() {
+    if (this->param_list->type == PAIR_PARAM_LIST) {
+      this->param_list = this->param_list->downcast<PairParamList>()->next;
+    } else {
+      this->param_list = nullptr;
+    }
+    return *this;
+  }
+
+  ParamListIterator operator++(int) {
+    ParamListIterator tmp = *this;
+    ++(*this);
+    return tmp;
+  }
+
+  friend bool operator==(const ParamListIterator &a,
+                         const ParamListIterator &b) {
+    return a.param_list == b.param_list;
+  }
+  friend bool operator!=(const ParamListIterator &a, ParamListIterator &b) {
+    return a.param_list != b.param_list;
+  }
+
+ private:
+  ParamList param_list;
 };
 
 class Param_ : virtual public ASTNode_ {

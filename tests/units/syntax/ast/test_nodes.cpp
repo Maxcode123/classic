@@ -81,3 +81,78 @@ TEST(NodesTest, TestEmptyStatementUpcast) {
   Statement stm = empty->upcast();
   EXPECT_EQ(stm->type, EMPTY_STATEMENT);
 }
+
+class ParamListIteratorTest : public testing::Test {
+ protected:
+  Param build_param(classic_builtin_types::Type t = classic_builtin_types::INT,
+                    std::string v = "myvar") {
+    return new Param_((new ClassicBuiltinType_(t))->upcast(), v);
+  }
+
+  LastParamList build_last_param_list(
+      classic_builtin_types::Type t = classic_builtin_types::INT,
+      std::string v = "myvar") {
+    return new LastParamList_(this->build_param(t, v));
+  }
+};
+
+TEST_F(ParamListIteratorTest, TestIterateLastParamListIterations) {
+  ParamList p = (new LastParamList_(this->build_param()))->upcast();
+  int c = 0;
+  for (auto it = ParamListIterator(p), end = ParamListIterator(nullptr);
+       it != end; ++it) {
+    c++;
+  }
+  EXPECT_EQ(c, 1);
+}
+
+TEST_F(ParamListIteratorTest, TestIteratePairParamListIterations) {
+  ParamList p = (new PairParamList_(this->build_last_param_list()->upcast(),
+                                    this->build_param()))
+                    ->upcast();
+  int c = 0;
+  for (auto it = ParamListIterator(p), end = ParamListIterator(nullptr);
+       it != end; ++it) {
+    c++;
+  }
+  EXPECT_EQ(c, 2);
+}
+
+TEST_F(ParamListIteratorTest, TestLastParamListParam) {
+  LastParamList last =
+      this->build_last_param_list(classic_builtin_types::DUPL, "dupl");
+  ParamList p = last->upcast();
+
+  ParamListIterator it = ParamListIterator(p);
+  EXPECT_EQ(it->classic_type->downcast<ClassicBuiltinType>()->type,
+            classic_builtin_types::DUPL);
+  EXPECT_EQ(it->name, "dupl");
+}
+
+TEST_F(ParamListIteratorTest, TestPairParamListParams) {
+  PairParamList pair = new PairParamList_(
+      this->build_last_param_list(classic_builtin_types::STR, "mystr")
+          ->upcast(),
+      this->build_param(classic_builtin_types::INT, "myint"));
+  PairParamList pair2 = new PairParamList_(
+      pair->upcast(), this->build_param(classic_builtin_types::DUPL, "mydupl"));
+
+  ParamList p = pair2->upcast();
+  ParamListIterator it = ParamListIterator(p);
+
+  EXPECT_EQ(it->name, "mydupl");
+  it++;
+  EXPECT_EQ(it->name, "myint");
+  it++;
+  EXPECT_EQ(it->name, "mystr");
+}
+
+TEST_F(ParamListIteratorTest, TestDerefenceEndIterator) {
+  ParamListIterator it = ParamListIterator(nullptr);
+  EXPECT_THROW(*it, IteratorError);
+}
+
+TEST_F(ParamListIteratorTest, TestReferenceEndIterator) {
+  ParamListIterator it = ParamListIterator(nullptr);
+  EXPECT_THROW(it->name, IteratorError);
+}

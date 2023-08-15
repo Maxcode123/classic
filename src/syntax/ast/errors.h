@@ -24,3 +24,13 @@ class EmptyASTStackError : public std::exception {
  private:
   std::string message;
 };
+
+class IteratorError : public std::exception {
+ public:
+  const char *what() { return message.c_str(); }
+  IteratorError(char *msg) { message = msg; }
+  IteratorError(const std::string msg) { message = msg; }
+
+ private:
+  std::string message;
+};
