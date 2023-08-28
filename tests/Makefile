@@ -5,6 +5,12 @@ CCTEST=$(CC) $^ -o $@ $(TESTLIB)
 run-main: $(BIN)/test_main
 	$<
 
+.PHONY: ir
+ir: $(TEST)/test.ll
+
+$(TEST)/test.ll: $(TEST)/test.c
+	clang -emit-llvm -S $< -o $@
+
 .PHONY: integration-test
 integration-test: integration-test-parser
 
