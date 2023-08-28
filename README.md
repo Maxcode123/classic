@@ -92,10 +92,10 @@ $ git clone https://github.com/Maxcode123/classic.git  && \
  **All commands mentioned should be executed from the root directory.**
 
 ## Lexer
-The lexer is documented in [src/lexical](https://github.com/Maxcode123/classic/tree/syntax/src/lexical)
+The lexer is documented in [src/lexical](https://github.com/Maxcode123/classic/tree/main/src/lexical)
 
 ## Parser
-The parser is documented in [src/syntax](https://github.com/Maxcode123/classic/tree/syntax/src/syntax).
+The parser is documented in [src/syntax](https://github.com/Maxcode123/classic/tree/main/src/syntax).
 
 
 ## Tests
