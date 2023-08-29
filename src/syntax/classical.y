@@ -155,18 +155,18 @@ type:
     | custom-type
 
 funcs:
-    initus-func { builder.build_last_function_list(); update_ast(); }
-    | func-list initus-func { builder.build_pair_function_list(); update_ast(); }
+    initus-func { handler.handle<LastFunctionList, ASTBuilder>(&builder, &ASTBuilder::build_last_function_list); update_ast(); }
+    | func-list initus-func { handler.handle<PairFunctionList, ASTBuilder>(&builder, &ASTBuilder::build_pair_function_list); update_ast(); }
 
 initus-func:
-    _OPER _COLON _INT_TYPE _INITUS _LPAREN _RPAREN _LBRACK func-body _RBRACK { builder.build_initus_function(); update_ast(); }
+    _OPER _COLON _INT_TYPE _INITUS _LPAREN _RPAREN _LBRACK func-body _RBRACK { handler.handle<Function, ASTBuilder>(&builder, &ASTBuilder::build_initus_function); update_ast(); }
 
 func-list:
-    func { builder.build_last_function_list(); update_ast(); }
-    | func-list func { builder.build_pair_function_list(); update_ast(); }
+    func { handler.handle<LastFunctionList, ASTBuilder>(&builder, &ASTBuilder::build_last_function_list); update_ast(); }
+    | func-list func { handler.handle<PairFunctionList, ASTBuilder>(&builder, &ASTBuilder::build_pair_function_list); update_ast(); }
 
 func:
-    _OPER _COLON exodus-type func-id _LPAREN param-list _RPAREN _LBRACK func-body _RBRACK { builder.build_function(); update_ast(); }
+    _OPER _COLON exodus-type func-id _LPAREN param-list _RPAREN _LBRACK func-body _RBRACK { handler.handle<Function, ASTBuilder>(&builder, &ASTBuilder::build_function); update_ast(); }
 
 func-id:
     _ID { builder.store(current_token.semantval()); update_ast(); }
@@ -180,20 +180,20 @@ param-list:
     | non-empty-param-list
 
 non-empty-param-list:
-    param { builder.build_last_param_list(); update_ast(); }
-    | non-empty-param-list _COMMA param { builder.build_pair_param_list(); update_ast(); }
+    param { handler.handle<LastParamList, ASTBuilder>(&builder, &ASTBuilder::build_last_param_list); update_ast(); }
+    | non-empty-param-list _COMMA param { handler.handle<PairParamList, ASTBuilder>(&builder, &ASTBuilder::build_pair_param_list); update_ast(); }
 
 param:
-    type param-id { builder.build_param(); update_ast(); }
+    type param-id { handler.handle<Param, ASTBuilder>(&builder, &ASTBuilder::build_param); update_ast(); }
 
 param-id:
     _ID { builder.store(current_token.semantval()); update_ast(); }
 
 func-body:
-    statement exodus-stm { builder.build_function_body(); update_ast(); }
+    statement exodus-stm { handler.handle<FunctionBody, ASTBuilder>(&builder, &ASTBuilder::build_function_body); update_ast(); }
 
 exodus-stm:
-    _EXODUS exp _SEMICOLON { builder.build_exodus_statement(); update_ast(); }
+    _EXODUS exp _SEMICOLON { handler.handle<ExodusStatement, ASTBuilder>(&builder, &ASTBuilder::build_exodus_statement); update_ast(); }
 
 statement:
     empty-stm
@@ -202,7 +202,7 @@ statement:
 non-empty-stm:
     compound-stm
     | assign-stm
-    | exp { builder.build_expression_statement(); update_ast(); }
+    | exp { handler.handle<ExpressionStatement, ASTBuilder>(&builder, &ASTBuilder::build_expression_statement); update_ast(); }
 
 empty-stm:
     %empty { builder.build_empty_statement(); update_ast(); }
@@ -213,23 +213,23 @@ compound-stm:
 
 assign-or-exp-stm:
     assign-stm
-    | exp { builder.build_expression_statement(); update_ast(); }
+    | exp { handler.handle<ExpressionStatement, ASTBuilder>(&builder, &ASTBuilder::build_expression_statement); update_ast(); }
 
 assign-stm:
-    ids _EQUAL exp { builder.build_assign_statement(); update_ast(); }
+    ids _EQUAL exp { handler.handle<AssignStatement, ASTBuilder>(&builder, &ASTBuilder::build_assign_statement); update_ast(); }
 
 ids:
     _ID { builder.store(current_token.semantval()); update_ast(); }
 
 exp:
-    _LPAREN exp _RPAREN { builder.build_parentheses_expression(); update_ast(); }
+    _LPAREN exp _RPAREN { handler.handle<ParenthesesExpression, ASTBuilder>(&builder, &ASTBuilder::build_parentheses_expression); update_ast(); }
     | binop-exp
     | func-call
     | literal
     | variable
 
 binop-exp:
-    exp binop exp %prec BINOP { builder.build_binary_operation_expression(); update_ast(); }
+    exp binop exp %prec BINOP { handler.handle<BinaryOperationExpression, ASTBuilder>(&builder, &ASTBuilder::build_binary_operation_expression); update_ast(); }
 
 binop:
     _PLUS { builder.store(BINARY_PLUS); update_ast(); }
@@ -238,18 +238,18 @@ binop:
     | _TIMES { builder.store(BINARY_TIMES); update_ast(); }
 
 func-call:
-    ids _LPAREN arg-list _RPAREN { builder.build_function_call_expression(); update_ast(); }
+    ids _LPAREN arg-list _RPAREN { handler.handle<FunctionCallExpression, ASTBuilder>(&builder, &ASTBuilder::build_function_call_expression); update_ast(); }
 
 arg-list:
     %empty { builder.build_empty_argument_list(); update_ast(); }
     | non-empty-arg-list
 
 non-empty-arg-list:
-    arg { builder.build_last_argument_list(); update_ast(); }
-    | non-empty-arg-list _COMMA arg { builder.build_pair_argument_list(); update_ast(); }
+    arg { handler.handle<LastArgumentList, ASTBuilder>(&builder, &ASTBuilder::build_last_argument_list); update_ast(); }
+    | non-empty-arg-list _COMMA arg { handler.handle<PairArgumentList, ASTBuilder>(&builder, &ASTBuilder::build_pair_argument_list); update_ast(); }
 
 arg:
-    arg-id _EQUAL exp { builder.build_argument(); update_ast(); }
+    arg-id _EQUAL exp { handler.handle<Argument, ASTBuilder>(&builder, &ASTBuilder::build_argument); update_ast(); }
 
 arg-id:
     _ID { builder.store(current_token.semantval()); update_ast(); }
