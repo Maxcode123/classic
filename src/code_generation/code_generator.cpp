@@ -1,5 +1,33 @@
 #include "code_generator.h"
 
+llvm::Function* CodeGenerator::generate(Function func) {
+  std::vector<llvm::Type*> params = this->generate(func->param_list);
+  llvm::Type* ret = this->generate(func->return_type);
+  llvm::FunctionType* ft = llvm::FunctionType::get(ret, params, false);
+  llvm::Function* f = llvm::Function::Create(
+      ft, llvm::Function::ExternalLinkage, func->name, the_module.get());
+
+  int i = 0;
+  for (auto it = ParamListIterator(func->param_list),
+            end = ParamListIterator(nullptr);
+       it != end; ++it, ++i) {
+    f->getArg(i)->setName(it->name);
+  }
+
+  llvm::BasicBlock* bb = llvm::BasicBlock::Create(*the_context, "entry", f);
+  the_builder->SetInsertPoint(bb);
+
+  this->proxy.clear();
+  for (auto& arg : f->args()) {
+    this->proxy.update(
+        func->name + ":" + (std::string)arg.getName(),
+        the_builder->CreateAlloca(arg.getType(), nullptr, arg.getName()));
+  }
+
+  this->generate_and_insert(func->body->statement);
+  the_builder->CreateRet(this->generate(func->body->exodus));
+}
+
 std::vector<llvm::Type*> CodeGenerator::generate(ParamList param_list) {
   if (param_list->type == LAST_PARAM_LIST)
     return this->generate(param_list->downcast<LastParamList>());
@@ -33,6 +61,18 @@ llvm::Type* CodeGenerator::generate(Param param) {
     }
   }
   return nullptr;
+}
+
+llvm::Value* CodeGenerator::generate(AssignStatement stm) {
+  llvm::AllocaInst* mem_ptr = this->proxy.get(stm->lhs_id);
+  if (mem_ptr == nullptr) {
+    mem_ptr = the_builder->CreateAlloca(
+        this->generate(stm->rhs_expression->classic_type), nullptr,
+        stm->lhs_id);
+  }
+  llvm::Value* value = this->generate(stm->rhs_expression);
+  the_builder->CreateStore(value, mem_ptr);
+  return value;
 }
 
 llvm::Value* CodeGenerator::generate(ExpressionStatement stm) {

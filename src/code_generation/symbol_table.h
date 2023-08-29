@@ -7,24 +7,28 @@
 typedef class SymbolTable_ {
  public:
   bool look_up(std::string n) { return (map.find(n) != map.end()); }
-  llvm::Value* get(std::string n) {
+  llvm::AllocaInst* get(std::string n) {
     auto v = map.find(n);
     if (v != map.end()) return v->second;
     return nullptr;
   }
-  void update(std::string n, llvm::Value* v) {
+  void update(std::string n, llvm::AllocaInst* v) {
     map.emplace(std::make_pair(n, v));
   }
+  void clear() { map.clear(); }
 
  private:
-  std::map<std::string, llvm::Value*> map;
+  std::map<std::string, llvm::AllocaInst*> map;
 }* SymbolTable;
 
 class SymbolTableProxy {
  public:
   bool look_up(std::string n) { return symbol_table->look_up(n); }
-  llvm::Value* get(std::string n) { return symbol_table->get(n); }
-  void update(std::string n, llvm::Value* v) { symbol_table->update(n, v); }
+  llvm::AllocaInst* get(std::string n) { return symbol_table->get(n); }
+  void update(std::string n, llvm::AllocaInst* v) {
+    symbol_table->update(n, v);
+  }
+  void clear() { symbol_table->clear(); }
 
  private:
   SymbolTable symbol_table;
