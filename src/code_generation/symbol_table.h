@@ -6,6 +6,8 @@
 
 typedef class SymbolTable_ {
  public:
+  SymbolTable_() {}
+
   bool look_up(std::string n) { return (map.find(n) != map.end()); }
   llvm::AllocaInst* get(std::string n) {
     auto v = map.find(n);
@@ -23,6 +25,9 @@ typedef class SymbolTable_ {
 
 class SymbolTableProxy {
  public:
+  SymbolTableProxy(SymbolTable st) { symbol_table = st; }
+  SymbolTableProxy() {}
+
   bool look_up(std::string n) { return symbol_table->look_up(n); }
   llvm::AllocaInst* get(std::string n) { return symbol_table->get(n); }
   void update(std::string n, llvm::AllocaInst* v) {

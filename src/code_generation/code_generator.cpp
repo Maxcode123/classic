@@ -69,26 +69,30 @@ llvm::Type* CodeGenerator::generate(Param param) {
 
 void CodeGenerator::generate_and_insert(Statement stm) {
   switch (stm->type) {
-    case COMPOUND_STATEMENT:
+    case COMPOUND_STATEMENT: {
       CompoundStatement cmp_stm = stm->downcast<CompoundStatement>();
       this->generate_and_insert(cmp_stm->first_statement);
       this->generate_and_insert(cmp_stm->second_statement);
       break;
-    case ASSIGN_STATEMENT:
+    }
+    case ASSIGN_STATEMENT: {
       AssignStatement asn_stm = stm->downcast<AssignStatement>();
       llvm::AllocaInst* mem_ptr = this->proxy.get(asn_stm->lhs_id);
       if (mem_ptr == nullptr) {
         mem_ptr = this->ir_builder->CreateAlloca(
             this->map_type(asn_stm->rhs_expression->classic_type), nullptr,
             asn_stm->lhs_id);
+        this->proxy.update(asn_stm->lhs_id, mem_ptr);
       }
       this->ir_builder->CreateStore(this->generate(asn_stm->rhs_expression),
                                     mem_ptr);
       break;
-    case EXPRESSION_STATEMENT:
+    }
+    case EXPRESSION_STATEMENT: {
       this->ir_builder->Insert(
           this->generate(stm->downcast<ExpressionStatement>()->expression));
       break;
+    }
     case EMPTY_STATEMENT:
       return;
     default:
@@ -173,8 +177,9 @@ llvm::Value* CodeGenerator::generate(ParenthesesExpression exp) {
 std::vector<llvm::Value*> CodeGenerator::generate(ArgumentList arg_list) {
   if (arg_list->type == LAST_ARG_LIST)
     return this->generate(arg_list->downcast<LastArgumentList>());
-  else
+  else if (arg_list->type == PAIR_ARG_LIST)
     return this->generate(arg_list->downcast<PairArgumentList>());
+  return std::vector<llvm::Value*>{};
 }
 
 std::vector<llvm::Value*> CodeGenerator::generate(PairArgumentList arg_list) {

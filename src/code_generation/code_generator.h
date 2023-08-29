@@ -27,6 +27,7 @@ class CodeGenerator {
     module = mod;
     ir_builder = bld;
   }
+  CodeGenerator() {}
 
   llvm::Function* generate(Function func);
 

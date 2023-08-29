@@ -25,6 +25,9 @@ $(BIN)/test_parser: $(OBJ)/test_parser.o $(OBJ)/classical.tab.o $(OBJ)/mock_lex.
 .PHONY: unit-test
 unit-test: unit-test-parser unit-test-scanner unit-test-utils
 
+.PHONY: unit-test-generator
+unit-test-generator: test-code-generator
+
 .PHONY: unit-test-parser
 unit-test-parser: test-nodes test-builder
 
@@ -34,6 +37,9 @@ unit-test-scanner: test-tokens
 .PHONY: unit-test-utils
 unit-test-utils: test-error-handler
 
+.PHONY: test-code-generator
+test-code-generator: $(BIN)/test_code_generator
+	$<
 
 .PHONY: test-builder
 test-builder: $(BIN)/test_builder
@@ -51,6 +57,9 @@ test-error-handler: $(BIN)/test_error_handler
 test-tokens: $(BIN)/test_tokens
 	$<
 
+$(BIN)/test_code_generator: $(OBJ)/nodes.o $(OBJ)/code_generator.o $(OBJ)/test_code_generator.o
+	$(CCTEST) -lLLVM-15
+
 $(BIN)/test_builder: $(OBJ)/builder.o $(OBJ)/nodes.o $(OBJ)/test_builder.o
 	$(CCTEST)
 
@@ -67,10 +76,13 @@ $(BIN)/test_tokens: $(OBJ)/tokens.o $(OBJ)/test_tokens.o
 $(OBJ)/%.o: $(TEST)/units/%.cpp
 	$(CC) $(ARGS) -c $< -o $@
 
-$(OBJ)/%.o: $(TEST)/units/lexical/%.cpp
+$(OBJ)/%.o: $(TEST)/units/code_generation/%.cpp
 	$(CC) $(ARGS) -c $< -o $@
 
 $(OBJ)/%.o: $(TEST)/units/syntax/ast/%.cpp
+	$(CC) $(ARGS) -c $< -o $@
+
+$(OBJ)/%.o: $(TEST)/units/lexical/%.cpp
 	$(CC) $(ARGS) -c $< -o $@
 
 $(OBJ)/%.o: $(TEST)/units/utils/%.cpp
