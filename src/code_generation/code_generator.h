@@ -28,7 +28,7 @@ class CodeGenerator {
 
   llvm::Function* generate(Function func);
 
-  llvm::Type* generate(ClassicType t);
+  llvm::Type* map_type(ClassicType t);
 
   std::vector<llvm::Type*> generate(ParamList param_list);
   std::vector<llvm::Type*> generate(PairParamList param_list);

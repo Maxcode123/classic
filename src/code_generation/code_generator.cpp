@@ -2,7 +2,7 @@
 
 llvm::Function* CodeGenerator::generate(Function func) {
   std::vector<llvm::Type*> params = this->generate(func->param_list);
-  llvm::Type* ret = this->generate(func->return_type);
+  llvm::Type* ret = this->map_type(func->return_type);
   llvm::FunctionType* ft = llvm::FunctionType::get(ret, params, false);
   llvm::Function* f = llvm::Function::Create(
       ft, llvm::Function::ExternalLinkage, func->name, the_module.get());
@@ -26,6 +26,22 @@ llvm::Function* CodeGenerator::generate(Function func) {
 
   this->generate_and_insert(func->body->statement);
   the_builder->CreateRet(this->generate(func->body->exodus));
+  return f;
+}
+
+llvm::Type* CodeGenerator::map_type(ClassicType t) {
+  if (t->type == BUILTIN_TYPE) {
+    ClassicBuiltinType bt = t->downcast<ClassicBuiltinType>();
+    switch (bt->type) {
+      case classic_builtin_types::INT:
+        return llvm::Type::getInt64Ty(*the_context);
+      case classic_builtin_types::DUPL:
+        return llvm::Type::getDoubleTy(*the_context);
+      case classic_builtin_types::ANEF:
+        return llvm::Type::getInt1Ty(*the_context);
+    }
+  }
+  return nullptr;
 }
 
 std::vector<llvm::Type*> CodeGenerator::generate(ParamList param_list) {
@@ -48,31 +64,40 @@ std::vector<llvm::Type*> CodeGenerator::generate(LastParamList param_list) {
 }
 
 llvm::Type* CodeGenerator::generate(Param param) {
-  if (param->classic_type->type == BUILTIN_TYPE) {
-    ClassicBuiltinType builtin_type =
-        param->classic_type->downcast<ClassicBuiltinType>();
-    switch (builtin_type->type) {
-      case classic_builtin_types::INT:
-        return llvm::Type::getInt64Ty(*the_context);
-      case classic_builtin_types::DUPL:
-        return llvm::Type::getDoubleTy(*the_context);
-      case classic_builtin_types::ANEF:
-        return llvm::Type::getInt1Ty(*the_context);
-    }
+  return this->map_type(param->classic_type);
+}
+
+void CodeGenerator::generate_and_insert(Statement stm) {
+  switch (stm->type) {
+    case COMPOUND_STATEMENT:
+      CompoundStatement cmp_stm = stm->downcast<CompoundStatement>();
+      this->generate_and_insert(cmp_stm->first_statement);
+      this->generate_and_insert(cmp_stm->second_statement);
+      break;
+    case ASSIGN_STATEMENT:
+      AssignStatement asn_stm = stm->downcast<AssignStatement>();
+      llvm::AllocaInst* mem_ptr = this->proxy.get(asn_stm->lhs_id);
+      if (mem_ptr == nullptr) {
+        mem_ptr = the_builder->CreateAlloca(
+            this->map_type(asn_stm->rhs_expression->classic_type), nullptr,
+            asn_stm->lhs_id);
+      }
+      the_builder->CreateStore(this->generate(asn_stm->rhs_expression),
+                               mem_ptr);
+      break;
+    case EXPRESSION_STATEMENT:
+      the_builder->Insert(
+          this->generate(stm->downcast<ExpressionStatement>()->expression));
+      break;
+    case EMPTY_STATEMENT:
+      return;
+    default:
+      break;
   }
-  return nullptr;
 }
 
 llvm::Value* CodeGenerator::generate(AssignStatement stm) {
-  llvm::AllocaInst* mem_ptr = this->proxy.get(stm->lhs_id);
-  if (mem_ptr == nullptr) {
-    mem_ptr = the_builder->CreateAlloca(
-        this->generate(stm->rhs_expression->classic_type), nullptr,
-        stm->lhs_id);
-  }
-  llvm::Value* value = this->generate(stm->rhs_expression);
-  the_builder->CreateStore(value, mem_ptr);
-  return value;
+  return this->generate(stm->rhs_expression);
 }
 
 llvm::Value* CodeGenerator::generate(ExpressionStatement stm) {
