@@ -5,7 +5,7 @@ llvm::Function* CodeGenerator::generate(Function func) {
   llvm::Type* ret = this->map_type(func->return_type);
   llvm::FunctionType* ft = llvm::FunctionType::get(ret, params, false);
   llvm::Function* f = llvm::Function::Create(
-      ft, llvm::Function::ExternalLinkage, func->name, the_module.get());
+      ft, llvm::Function::ExternalLinkage, func->name, this->module);
 
   int i = 0;
   for (auto it = ParamListIterator(func->param_list),
@@ -14,18 +14,18 @@ llvm::Function* CodeGenerator::generate(Function func) {
     f->getArg(i)->setName(it->name);
   }
 
-  llvm::BasicBlock* bb = llvm::BasicBlock::Create(*the_context, "entry", f);
-  the_builder->SetInsertPoint(bb);
+  llvm::BasicBlock* bb = llvm::BasicBlock::Create(*this->context, "entry", f);
+  this->ir_builder->SetInsertPoint(bb);
 
   this->proxy.clear();
   for (auto& arg : f->args()) {
     this->proxy.update(
         func->name + ":" + (std::string)arg.getName(),
-        the_builder->CreateAlloca(arg.getType(), nullptr, arg.getName()));
+        this->ir_builder->CreateAlloca(arg.getType(), nullptr, arg.getName()));
   }
 
   this->generate_and_insert(func->body->statement);
-  the_builder->CreateRet(this->generate(func->body->exodus));
+  this->ir_builder->CreateRet(this->generate(func->body->exodus));
   return f;
 }
 
@@ -34,11 +34,11 @@ llvm::Type* CodeGenerator::map_type(ClassicType t) {
     ClassicBuiltinType bt = t->downcast<ClassicBuiltinType>();
     switch (bt->type) {
       case classic_builtin_types::INT:
-        return llvm::Type::getInt64Ty(*the_context);
+        return llvm::Type::getInt64Ty(*this->context);
       case classic_builtin_types::DUPL:
-        return llvm::Type::getDoubleTy(*the_context);
+        return llvm::Type::getDoubleTy(*this->context);
       case classic_builtin_types::ANEF:
-        return llvm::Type::getInt1Ty(*the_context);
+        return llvm::Type::getInt1Ty(*this->context);
     }
   }
   return nullptr;
@@ -78,15 +78,15 @@ void CodeGenerator::generate_and_insert(Statement stm) {
       AssignStatement asn_stm = stm->downcast<AssignStatement>();
       llvm::AllocaInst* mem_ptr = this->proxy.get(asn_stm->lhs_id);
       if (mem_ptr == nullptr) {
-        mem_ptr = the_builder->CreateAlloca(
+        mem_ptr = this->ir_builder->CreateAlloca(
             this->map_type(asn_stm->rhs_expression->classic_type), nullptr,
             asn_stm->lhs_id);
       }
-      the_builder->CreateStore(this->generate(asn_stm->rhs_expression),
-                               mem_ptr);
+      this->ir_builder->CreateStore(this->generate(asn_stm->rhs_expression),
+                                    mem_ptr);
       break;
     case EXPRESSION_STATEMENT:
-      the_builder->Insert(
+      this->ir_builder->Insert(
           this->generate(stm->downcast<ExpressionStatement>()->expression));
       break;
     case EMPTY_STATEMENT:
@@ -128,13 +128,13 @@ llvm::Value* CodeGenerator::generate(Expression exp) {
 llvm::Value* CodeGenerator::generate(LiteralExpression exp) {
   switch (exp->classic_builtin_type) {
     case classic_builtin_types::INT:
-      return llvm::ConstantInt::get(*the_context,
+      return llvm::ConstantInt::get(*this->context,
                                     llvm::APSInt(std::stoi(exp->literal_str)));
     case classic_builtin_types::DUPL:
-      return llvm::ConstantFP::get(*the_context,
+      return llvm::ConstantFP::get(*this->context,
                                    llvm::APFloat(std::stof(exp->literal_str)));
     case classic_builtin_types::ANEF:
-      return llvm::ConstantInt::get(*the_context, llvm::APInt(1, 0, false));
+      return llvm::ConstantInt::get(*this->context, llvm::APInt(1, 0, false));
   };
   return nullptr;
 }
@@ -144,9 +144,9 @@ llvm::Value* CodeGenerator::generate(VariableExpression exp) {
 }
 
 llvm::Value* CodeGenerator::generate(FunctionCallExpression exp) {
-  llvm::Function* func = the_module->getFunction(exp->function_name);
+  llvm::Function* func = this->module->getFunction(exp->function_name);
   std::vector<llvm::Value*> args = this->generate(exp->argument_list);
-  return the_builder->CreateCall(func, args, "calltmp");
+  return this->ir_builder->CreateCall(func, args, "calltmp");
 }
 
 llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
@@ -154,13 +154,13 @@ llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
   llvm::Value* right = this->generate(exp->right_expression);
   switch (exp->binary_operator) {
     case BINARY_MINUS:
-      return the_builder->CreateFSub(left, right, "subtmp");
+      return this->ir_builder->CreateFSub(left, right, "subtmp");
     case BINARY_PLUS:
-      return the_builder->CreateFAdd(left, right, "addtmp");
+      return this->ir_builder->CreateFAdd(left, right, "addtmp");
     case BINARY_DIV:
-      return the_builder->CreateFDiv(left, right, "divtmp");
+      return this->ir_builder->CreateFDiv(left, right, "divtmp");
     case BINARY_TIMES:
-      return the_builder->CreateFMul(left, right, "multmp");
+      return this->ir_builder->CreateFMul(left, right, "multmp");
     default:
       return nullptr;
   }

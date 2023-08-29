@@ -18,13 +18,15 @@
 #include "../code_generation/validator.h"
 #include "../syntax/ast/nodes.h"
 
-extern std::unique_ptr<llvm::LLVMContext> the_context;
-extern std::unique_ptr<llvm::Module> the_module;
-extern std::unique_ptr<llvm::IRBuilder<>> the_builder;
-
 class CodeGenerator {
  public:
-  CodeGenerator(SymbolTableProxy p) { proxy = p; }
+  CodeGenerator(SymbolTableProxy p, llvm::LLVMContext* ctx, llvm::Module* mod,
+                llvm::IRBuilder<>* bld) {
+    proxy = p;
+    context = ctx;
+    module = mod;
+    ir_builder = bld;
+  }
 
   llvm::Function* generate(Function func);
 
@@ -54,4 +56,7 @@ class CodeGenerator {
 
  private:
   SymbolTableProxy proxy;
+  llvm::LLVMContext* context;
+  llvm::Module* module;
+  llvm::IRBuilder<>* ir_builder;
 };
