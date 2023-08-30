@@ -18,6 +18,8 @@
 #include "../code_generation/validator.h"
 #include "../syntax/ast/nodes.h"
 
+#define INTEGER_BITSIZE 64
+
 class CodeGenerator {
  public:
   CodeGenerator(SymbolTableProxy p, llvm::LLVMContext* ctx, llvm::Module* mod,

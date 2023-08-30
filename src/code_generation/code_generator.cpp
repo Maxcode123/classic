@@ -78,7 +78,7 @@ void CodeGenerator::generate_and_insert(Statement stm) {
     }
     case ASSIGN_STATEMENT: {
       AssignStatement asn_stm = stm->downcast<AssignStatement>();
-      llvm::AllocaInst* mem_ptr = this->proxy.get(asn_stm->lhs_id);
+      llvm::Value* mem_ptr = this->proxy.get(asn_stm->lhs_id);
       if (mem_ptr == nullptr) {
         mem_ptr = this->ir_builder->CreateAlloca(
             this->map_type(asn_stm->rhs_expression->classic_type), nullptr,
@@ -134,7 +134,8 @@ llvm::Value* CodeGenerator::generate(LiteralExpression exp) {
   switch (exp->classic_builtin_type) {
     case classic_builtin_types::INT:
       return llvm::ConstantInt::get(
-          *this->context, llvm::APInt(64, std::stoi(exp->literal_str), false));
+          *this->context,
+          llvm::APInt(INTEGER_BITSIZE, std::stoi(exp->literal_str), false));
     case classic_builtin_types::DUPL:
       return llvm::ConstantFP::get(*this->context,
                                    llvm::APFloat(std::stof(exp->literal_str)));
@@ -157,18 +158,34 @@ llvm::Value* CodeGenerator::generate(FunctionCallExpression exp) {
 llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
   llvm::Value* left = this->generate(exp->left_expression);
   llvm::Value* right = this->generate(exp->right_expression);
-  switch (exp->binary_operator) {
-    case BINARY_MINUS:
-      return this->ir_builder->CreateFSub(left, right, "subtmp");
-    case BINARY_PLUS:
-      return this->ir_builder->CreateFAdd(left, right, "addtmp");
-    case BINARY_DIV:
-      return this->ir_builder->CreateFDiv(left, right, "divtmp");
-    case BINARY_TIMES:
-      return this->ir_builder->CreateFMul(left, right, "multmp");
-    default:
-      return nullptr;
+  if (exp->builtin_type == classic_builtin_types::INT) {
+    switch (exp->binary_operator) {
+      case BINARY_MINUS:
+        return this->ir_builder->CreateSub(left, right, "subtmp");
+      case BINARY_PLUS:
+        return this->ir_builder->CreateAdd(left, right, "addtmp");
+      case BINARY_DIV:
+        return this->ir_builder->CreateSDiv(left, right, "divtmp");
+      case BINARY_TIMES:
+        return this->ir_builder->CreateMul(left, right, "multmp");
+      default:
+        break;
+    }
+  } else if (exp->builtin_type == classic_builtin_types::DUPL) {
+    switch (exp->binary_operator) {
+      case BINARY_MINUS:
+        return this->ir_builder->CreateFSub(left, right, "subtmp");
+      case BINARY_PLUS:
+        return this->ir_builder->CreateFAdd(left, right, "addtmp");
+      case BINARY_DIV:
+        return this->ir_builder->CreateFDiv(left, right, "divtmp");
+      case BINARY_TIMES:
+        return this->ir_builder->CreateFMul(left, right, "multmp");
+      default:
+        break;
+    }
   }
+  return nullptr;
 }
 
 llvm::Value* CodeGenerator::generate(ParenthesesExpression exp) {
