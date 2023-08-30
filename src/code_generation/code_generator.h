@@ -54,6 +54,7 @@ class CodeGenerator {
   std::vector<llvm::Value*> generate(ArgumentList arg_list);
   std::vector<llvm::Value*> generate(PairArgumentList arg_list);
   std::vector<llvm::Value*> generate(LastArgumentList arg_list);
+  std::vector<llvm::Value*> generate(EmptyArgumentList arg_list);
   llvm::Value* generate(Argument arg);
 
  private:

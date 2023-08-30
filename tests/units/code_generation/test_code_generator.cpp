@@ -9,11 +9,13 @@ class CodeGeneratorTest : public testing::Test {
   llvm::LLVMContext* context;
   llvm::Module* module;
   llvm::IRBuilder<>* ir_builder;
-  //
+
   SymbolTable symbol_table;
   SymbolTableProxy proxy;
 
   CodeGenerator code_generator;
+
+  llvm::Function* test_func;
 
   void SetUp() override {
     this->context = new llvm::LLVMContext();
@@ -25,6 +27,8 @@ class CodeGeneratorTest : public testing::Test {
 
     this->code_generator = CodeGenerator(this->proxy, this->context,
                                          this->module, this->ir_builder);
+
+    this->test_func = this->get_test_func();
   }
 
   llvm::Function* get_test_func() {
@@ -36,8 +40,8 @@ class CodeGeneratorTest : public testing::Test {
   }
 
   void create_basic_block() {
-    llvm::BasicBlock* bb = llvm::BasicBlock::Create(
-        *this->context, "test_entry", this->get_test_func());
+    llvm::BasicBlock* bb =
+        llvm::BasicBlock::Create(*this->context, "test_entry", this->test_func);
     this->ir_builder->SetInsertPoint(bb);
   }
 
@@ -102,6 +106,17 @@ TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionAnef) {
   EXPECT_EQ(value->getAllocatedType(), llvm::Type::getInt1Ty(*this->context));
 }
 
+TEST_F(CodeGeneratorTest, TestGenerateFunctionCallTestFunc) {
+  FunctionCallExpression exp = new FunctionCallExpression_(
+      "test_func", (new EmptyArgumentList_())->upcast());
+
+  this->create_basic_block();
+
+  llvm::CallInst* call = (llvm::CallInst*)this->code_generator.generate(exp);
+  EXPECT_EQ(call->getCalledFunction(), this->test_func);
+  EXPECT_TRUE(call->getAttributes().isEmpty());
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {
   Argument arg = new Argument_("myint", (new LiteralExpression_(10))->upcast());
   llvm::Value* value = this->code_generator.generate(arg);
@@ -138,8 +153,7 @@ TEST_F(CodeGeneratorTest, TestGeneratePairArgumentListSize) {
 
 TEST_F(CodeGeneratorTest, TestGenerateEmptyArgumentList) {
   EmptyArgumentList arg_list = new EmptyArgumentList_();
-  std::vector<llvm::Value*> values =
-      this->code_generator.generate(arg_list->upcast());
+  std::vector<llvm::Value*> values = this->code_generator.generate(arg_list);
 
   EXPECT_EQ(values.size(), 0);
 }

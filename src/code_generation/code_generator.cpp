@@ -180,7 +180,7 @@ std::vector<llvm::Value*> CodeGenerator::generate(ArgumentList arg_list) {
     return this->generate(arg_list->downcast<LastArgumentList>());
   else if (arg_list->type == PAIR_ARG_LIST)
     return this->generate(arg_list->downcast<PairArgumentList>());
-  return std::vector<llvm::Value*>{};
+  return this->generate(arg_list->downcast<EmptyArgumentList>());
 }
 
 std::vector<llvm::Value*> CodeGenerator::generate(PairArgumentList arg_list) {
@@ -193,6 +193,10 @@ std::vector<llvm::Value*> CodeGenerator::generate(PairArgumentList arg_list) {
 std::vector<llvm::Value*> CodeGenerator::generate(LastArgumentList arg_list) {
   std::vector<llvm::Value*> args{this->generate(arg_list->argument)};
   return args;
+}
+
+std::vector<llvm::Value*> CodeGenerator::generate(EmptyArgumentList arg_list) {
+  return std::vector<llvm::Value*>{};
 }
 
 llvm::Value* CodeGenerator::generate(Argument arg) {
