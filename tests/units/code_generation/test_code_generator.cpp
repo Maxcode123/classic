@@ -54,16 +54,17 @@ class CodeGeneratorTest : public testing::Test {
     return mem_ptr;
   }
 
-  llvm::StoreInst* store(llvm::Value* v, llvm::AllocaInst* mem_ptr,
-                         std::string name) {
-    llvm::StoreInst* store = this->ir_builder->CreateStore(v, mem_ptr);
-    this->proxy.update(name, store);
-    return store;
+  llvm::StoreInst* store(llvm::Value* v, llvm::AllocaInst* mem_ptr) {
+    return this->ir_builder->CreateStore(v, mem_ptr);
   }
 
   void allocate_and_store(llvm::Value* value, llvm::Type* t, std::string name) {
     llvm::AllocaInst* mem_ptr = this->allocate(t, name);
-    this->store(value, mem_ptr, name);
+    this->store(value, mem_ptr);
+  }
+
+  llvm::Value* load(llvm::Type* t, llvm::Value* mem_ptr, std::string name) {
+    return this->ir_builder->CreateLoad(t, mem_ptr, name);
   }
 
   llvm::ConstantInt* create_int64(int val) {
@@ -110,48 +111,35 @@ TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionInt64) {
   this->create_basic_block();
   this->allocate_and_store(this->create_int64(5), INT64_TYPE, "int_var");
 
-  llvm::StoreInst* value = llvm::dyn_cast<llvm::StoreInst>(
+  llvm::AllocaInst* value = llvm::dyn_cast<llvm::AllocaInst>(
       this->code_generator.generate(new VariableExpression_("int_var")));
 
   EXPECT_NE(value, nullptr);
-
-  llvm::ConstantInt* const_int =
-      llvm::dyn_cast<llvm::ConstantInt>(value->getValueOperand());
-
-  EXPECT_NE(const_int, nullptr);
-  EXPECT_EQ(const_int->getSExtValue(), 5);
+  EXPECT_TRUE(value->getAllocatedType()->isIntegerTy());
+  EXPECT_EQ(value->getAllocatedType()->getIntegerBitWidth(), INTEGER_BITSIZE);
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionDupl) {
   this->create_basic_block();
   this->allocate_and_store(this->create_float(2.32), FLOAT_TYPE, "dupl_var");
 
-  llvm::StoreInst* value = llvm::dyn_cast<llvm::StoreInst>(
+  llvm::AllocaInst* value = llvm::dyn_cast<llvm::AllocaInst>(
       this->code_generator.generate(new VariableExpression_("dupl_var")));
 
   EXPECT_NE(value, nullptr);
-
-  llvm::ConstantFP* const_fp =
-      llvm::dyn_cast<llvm::ConstantFP>(value->getValueOperand());
-
-  EXPECT_NE(const_fp, nullptr);
-  EXPECT_FLOAT_EQ(const_fp->getValueAPF().convertToFloat(), 2.32);
+  EXPECT_TRUE(value->getAllocatedType()->isFloatTy());
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionAnef) {
   this->create_basic_block();
   this->allocate_and_store(this->create_int1(0), INT1_TYPE, "anef_var");
 
-  llvm::StoreInst* value = llvm::dyn_cast<llvm::StoreInst>(
+  llvm::AllocaInst* value = llvm::dyn_cast<llvm::AllocaInst>(
       this->code_generator.generate(new VariableExpression_("anef_var")));
 
   EXPECT_NE(value, nullptr);
-
-  llvm::ConstantInt* const_int =
-      llvm::dyn_cast<llvm::ConstantInt>(value->getValueOperand());
-
-  EXPECT_NE(const_int, nullptr);
-  EXPECT_EQ(const_int->getSExtValue(), 0);
+  EXPECT_TRUE(value->getAllocatedType()->isIntegerTy());
+  EXPECT_EQ(value->getAllocatedType()->getIntegerBitWidth(), 1);
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateFunctionCallTestFunc) {
@@ -170,10 +158,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionSub) {
   LiteralExpression right = new LiteralExpression_(10);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_MINUS, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::INT);
+  exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
       llvm::dyn_cast<llvm::ConstantInt>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_EQ(value->getSExtValue(), 1 - 10);
 }
 
@@ -182,10 +171,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionFSub) {
   LiteralExpression right = new LiteralExpression_(1.20);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_MINUS, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::DUPL);
+  exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
       llvm::dyn_cast<llvm::ConstantFP>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_FLOAT_EQ(value->getValueAPF().convertToFloat(), 10.25 - 1.20);
 }
 
@@ -194,10 +184,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAdd) {
   LiteralExpression right = new LiteralExpression_(44);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_PLUS, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::INT);
+  exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
       llvm::dyn_cast<llvm::ConstantInt>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_EQ(value->getSExtValue(), 56 + 44);
 }
 
@@ -206,10 +197,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFAdd) {
   LiteralExpression right = new LiteralExpression_(.21);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_PLUS, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::DUPL);
+  exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
       llvm::dyn_cast<llvm::ConstantFP>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_FLOAT_EQ(value->getValueAPF().convertToFloat(), .25 + .21);
 }
 
@@ -218,10 +210,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationSDiv) {
   LiteralExpression right = new LiteralExpression_(3);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_DIV, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::INT);
+  exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
       llvm::dyn_cast<llvm::ConstantInt>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_EQ(value->getSExtValue(), 33);
 }
 
@@ -230,10 +223,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFDiv) {
   LiteralExpression right = new LiteralExpression_(3.0);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_DIV, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::DUPL);
+  exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
       llvm::dyn_cast<llvm::ConstantFP>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_FLOAT_EQ(value->getValueAPF().convertToFloat(), 100.3 / 3.0);
 }
 
@@ -242,10 +236,11 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationMul) {
   LiteralExpression right = new LiteralExpression_(6);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_TIMES, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::INT);
+  exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
       llvm::dyn_cast<llvm::ConstantInt>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_EQ(value->getSExtValue(), 55 * 6);
 }
 
@@ -254,21 +249,31 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFMul) {
   LiteralExpression right = new LiteralExpression_(9.0194);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_TIMES, left->upcast(), right->upcast());
-  exp->set_type(classic_builtin_types::DUPL);
+  exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
       llvm::dyn_cast<llvm::ConstantFP>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
   EXPECT_FLOAT_EQ(value->getValueAPF().convertToFloat(), 12.36 * 9.0194);
 }
 
-// TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddVariableExpressions)
-// {
-//   llvm::AllocaInst* var_1 =
-//       this->allocate(llvm::Type::getInt64Ty(*this->context), "var_1");
+TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddVariableExpressions) {
+  this->create_basic_block();
+  this->allocate_and_store(this->create_int64(10), INT64_TYPE, "var_1");
+  this->allocate_and_store(this->create_int64(20), INT64_TYPE, "var_2");
 
-//   llvm::AllocaInst* var_2 =
-//       this->allocate(llvm::Type::getInt64Ty(*this->context), "var_2");
-// }
+  VariableExpression left = new VariableExpression_("var_1");
+  VariableExpression right = new VariableExpression_("var_2");
+  BinaryOperationExpression exp = new BinaryOperationExpression_(
+      BINARY_PLUS, left->upcast(), right->upcast());
+  exp->set_builtin_type(classic_builtin_types::INT);
+
+  llvm::BinaryOperator* value =
+      llvm::dyn_cast<llvm::BinaryOperator>(this->code_generator.generate(exp));
+  EXPECT_NE(value, nullptr);
+
+  // llvm::Value* result = this->load()
+}
 
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {
   Argument arg = new Argument_("myint", (new LiteralExpression_(10))->upcast());
