@@ -20,8 +20,9 @@ llvm::Function* CodeGenerator::generate(Function func) {
   this->proxy.clear();
   for (auto& arg : f->args()) {
     this->proxy.update(
-        func->name + ":" + (std::string)arg.getName(),
-        this->ir_builder->CreateAlloca(arg.getType(), nullptr, arg.getName()));
+        arg.getName().str(),
+        this->ir_builder->CreateAlloca(arg.getType(), nullptr,
+                                       func->name + ":" + arg.getName()));
   }
 
   this->generate_and_insert(func->body->statement);

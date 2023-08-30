@@ -11,6 +11,7 @@ class CodeGeneratorTest : public testing::Test {
   llvm::IRBuilder<>* ir_builder;
   //
   SymbolTable symbol_table;
+  SymbolTableProxy proxy;
 
   CodeGenerator code_generator;
 
@@ -20,10 +21,28 @@ class CodeGeneratorTest : public testing::Test {
     this->ir_builder = new llvm::IRBuilder<>(*this->context);
 
     this->symbol_table = new SymbolTable_();
+    this->proxy = SymbolTableProxy(this->symbol_table);
 
-    this->code_generator =
-        CodeGenerator(SymbolTableProxy(this->symbol_table), this->context,
-                      this->module, this->ir_builder);
+    this->code_generator = CodeGenerator(this->proxy, this->context,
+                                         this->module, this->ir_builder);
+  }
+
+  llvm::Function* get_test_func() {
+    llvm::FunctionType* ft =
+        llvm::FunctionType::get(llvm::Type::getInt64Ty(*this->context), false);
+    llvm::Function* f = llvm::Function::Create(
+        ft, llvm::Function::ExternalLinkage, "test_func", this->module);
+    return f;
+  }
+
+  void create_basic_block() {
+    llvm::BasicBlock* bb = llvm::BasicBlock::Create(
+        *this->context, "test_entry", this->get_test_func());
+    this->ir_builder->SetInsertPoint(bb);
+  }
+
+  void allocate(llvm::Type* t, std::string name) {
+    this->proxy.update(name, this->ir_builder->CreateAlloca(t));
   }
 };
 
@@ -33,6 +52,7 @@ TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionInt) {
       (llvm::ConstantInt*)this->code_generator.generate(exp);
 
   EXPECT_EQ(value->getSExtValue(), 10);
+  EXPECT_EQ(value->getBitWidth(), 64);
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionDupl) {
@@ -49,6 +69,37 @@ TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionAnef) {
       (llvm::ConstantInt*)this->code_generator.generate(exp);
 
   EXPECT_EQ(value->getSExtValue(), 0);
+  EXPECT_EQ(value->getBitWidth(), 1);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionInt64) {
+  this->create_basic_block();
+  this->allocate(llvm::Type::getInt64Ty(*this->context), "int_var");
+
+  llvm::AllocaInst* value = (llvm::AllocaInst*)this->code_generator.generate(
+      new VariableExpression_("int_var"));
+
+  EXPECT_EQ(value->getAllocatedType(), llvm::Type::getInt64Ty(*this->context));
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionDupl) {
+  this->create_basic_block();
+  this->allocate(llvm::Type::getFloatTy(*this->context), "dupl_var");
+
+  llvm::AllocaInst* value = (llvm::AllocaInst*)this->code_generator.generate(
+      new VariableExpression_("dupl_var"));
+
+  EXPECT_EQ(value->getAllocatedType(), llvm::Type::getFloatTy(*this->context));
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionAnef) {
+  this->create_basic_block();
+  this->allocate(llvm::Type::getInt1Ty(*this->context), "anef_var");
+
+  llvm::AllocaInst* value = (llvm::AllocaInst*)this->code_generator.generate(
+      new VariableExpression_("anef_var"));
+
+  EXPECT_EQ(value->getAllocatedType(), llvm::Type::getInt1Ty(*this->context));
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {
