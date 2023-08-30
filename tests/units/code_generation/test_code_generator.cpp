@@ -27,6 +27,30 @@ class CodeGeneratorTest : public testing::Test {
   }
 };
 
+TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionInt) {
+  LiteralExpression exp = new LiteralExpression_(10);
+  llvm::ConstantInt* value =
+      (llvm::ConstantInt*)this->code_generator.generate(exp);
+
+  EXPECT_EQ(value->getSExtValue(), 10);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionDupl) {
+  LiteralExpression exp = new LiteralExpression_(.00267);
+  llvm::ConstantFP* value =
+      (llvm::ConstantFP*)this->code_generator.generate(exp);
+
+  EXPECT_FLOAT_EQ(value->getValueAPF().convertToFloat(), .00267);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionAnef) {
+  LiteralExpression exp = new LiteralExpression_(classic_builtin_types::ANEF);
+  llvm::ConstantInt* value =
+      (llvm::ConstantInt*)this->code_generator.generate(exp);
+
+  EXPECT_EQ(value->getSExtValue(), 0);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {
   Argument arg = new Argument_("myint", (new LiteralExpression_(10))->upcast());
   llvm::Value* value = this->code_generator.generate(arg);

@@ -132,8 +132,8 @@ llvm::Value* CodeGenerator::generate(Expression exp) {
 llvm::Value* CodeGenerator::generate(LiteralExpression exp) {
   switch (exp->classic_builtin_type) {
     case classic_builtin_types::INT:
-      return llvm::ConstantInt::get(*this->context,
-                                    llvm::APSInt(std::stoi(exp->literal_str)));
+      return llvm::ConstantInt::get(
+          *this->context, llvm::APInt(64, std::stoi(exp->literal_str), false));
     case classic_builtin_types::DUPL:
       return llvm::ConstantFP::get(*this->context,
                                    llvm::APFloat(std::stof(exp->literal_str)));
