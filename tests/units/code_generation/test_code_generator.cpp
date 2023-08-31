@@ -79,12 +79,49 @@ class CodeGeneratorTest : public testing::Test {
   llvm::ConstantInt* create_int1(int val) {
     return llvm::ConstantInt::get(*this->context, llvm::APInt(1, val, false));
   }
+
+  ClassicBuiltinType create_builtin_int() {
+    return new ClassicBuiltinType_(classic_builtin_types::INT);
+  }
+
+  ClassicBuiltinType create_builtin_dupl() {
+    return new ClassicBuiltinType_(classic_builtin_types::DUPL);
+  }
 };
 
+TEST_F(CodeGeneratorTest, TestGenerateFunctionEmptyBody) {
+  // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
+  BinaryOperationExpression binop = new BinaryOperationExpression_(
+      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
+      (new VariableExpression_("b"))->upcast());
+  binop->set_builtin_type(classic_builtin_types::DUPL);
+  ExodusStatement exodus = new ExodusStatement_(binop->upcast());
+
+  FunctionBody body =
+      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
+
+  Param a = new Param_(this->create_builtin_dupl()->upcast(), "a");
+  Param b = new Param_(this->create_builtin_dupl()->upcast(), "b");
+  ParamList param_list =
+      (new PairParamList_((new LastParamList_(b))->upcast(), a))->upcast();
+
+  Function myfunc = new Function_(
+      "myfunc", this->create_builtin_dupl()->upcast(), param_list, body);
+
+  this->code_generator.generate(myfunc);
+
+  llvm::BasicBlock& myfunc_entry = this->module->getFunction("myfunc")->front();
+
+  auto itr = myfunc_entry.begin();
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::FAdd);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Ret);
+  EXPECT_EQ(itr, myfunc_entry.end());
+}
+
 TEST_F(CodeGeneratorTest, TestGeneratePairParamListSize) {
-  Param p = new Param_(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
-      "myint");
+  Param p = new Param_(this->create_builtin_int()->upcast(), "myint");
   LastParamList param_list = new LastParamList_(p);
   PairParamList pair_list = new PairParamList_(param_list->upcast(), p);
 
@@ -93,9 +130,7 @@ TEST_F(CodeGeneratorTest, TestGeneratePairParamListSize) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateLastParamListSize) {
-  Param p = new Param_(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
-      "myint");
+  Param p = new Param_(this->create_builtin_int()->upcast(), "myint");
   LastParamList param_list = new LastParamList_(p);
 
   std::vector<llvm::Type*> types = this->code_generator.generate(param_list);
@@ -109,9 +144,7 @@ TEST_F(CodeGeneratorTest, TestGenerateEmptyParamListSize) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateParam) {
-  Param p = new Param_(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
-      "myint");
+  Param p = new Param_(this->create_builtin_int()->upcast(), "myint");
 
   llvm::Type* t = this->code_generator.generate(p);
   EXPECT_TRUE(t->isIntegerTy());
@@ -121,8 +154,7 @@ TEST_F(CodeGeneratorTest, TestGenerateParam) {
 TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
   // a = 1;
   Expression exp1 = (new LiteralExpression_(1))->upcast();
-  exp1->set_classic_type(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  exp1->set_classic_type(this->create_builtin_int()->upcast());
   Statement stm1 = (new AssignStatement_("a", exp1))->upcast();
 
   // b = a + 2;
@@ -131,8 +163,7 @@ TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
       (new LiteralExpression_(2))->upcast()));
   binop->set_builtin_type(classic_builtin_types::INT);
   Expression exp2 = binop->upcast();
-  exp2->set_classic_type(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  exp2->set_classic_type(this->create_builtin_int()->upcast());
   Statement stm2 = (new AssignStatement_("b", exp2))->upcast();
 
   CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
@@ -160,8 +191,7 @@ TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
 
 TEST_F(CodeGeneratorTest, TestGenerateStatementAssignStatementInstructions) {
   Expression exp = (new LiteralExpression_(8))->upcast();
-  exp->set_classic_type(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  exp->set_classic_type(this->create_builtin_int()->upcast());
   AssignStatement stm = new AssignStatement_("a", exp);
 
   this->create_basic_block();

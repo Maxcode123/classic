@@ -3,6 +3,7 @@
 llvm::Function* CodeGenerator::generate(Function func) {
   std::vector<llvm::Type*> params = this->generate(func->param_list);
   llvm::Type* ret = this->map_type(func->return_type);
+
   llvm::FunctionType* ft = llvm::FunctionType::get(ret, params, false);
   llvm::Function* f = llvm::Function::Create(
       ft, llvm::Function::ExternalLinkage, func->name, this->module);

@@ -80,32 +80,39 @@ class Script {
     return llvm::ConstantInt::get(*this->context,
                                   llvm::APInt(INTEGER_BITSIZE, val, true));
   }
+
+  ClassicBuiltinType create_builtin_int() {
+    return new ClassicBuiltinType_(classic_builtin_types::INT);
+  }
+
+  ClassicBuiltinType create_builtin_dupl() {
+    return new ClassicBuiltinType_(classic_builtin_types::DUPL);
+  }
 };
 
 int main() {
   Script s = Script();
   s.init();
 
-  s.create_basic_block();
-
-  Expression exp1 = (new LiteralExpression_(1))->upcast();
-  exp1->set_classic_type(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
-  Statement stm1 = (new AssignStatement_("a", exp1))->upcast();
-
-  // b = a + 2;
-  BinaryOperationExpression binop = (new BinaryOperationExpression_(
+  // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
+  BinaryOperationExpression binop = new BinaryOperationExpression_(
       BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
-      (new LiteralExpression_(2))->upcast()));
-  binop->set_builtin_type(classic_builtin_types::INT);
-  Expression exp2 = binop->upcast();
-  exp2->set_classic_type(
-      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
-  Statement stm2 = (new AssignStatement_("b", exp2))->upcast();
+      (new VariableExpression_("b"))->upcast());
+  binop->set_builtin_type(classic_builtin_types::DUPL);
+  ExodusStatement exodus = new ExodusStatement_(binop->upcast());
 
-  CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
+  FunctionBody body =
+      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
 
-  s.code_generator.generate(cmp_stm->upcast());
+  Param a = new Param_(s.create_builtin_dupl()->upcast(), "a");
+  Param b = new Param_(s.create_builtin_dupl()->upcast(), "b");
+  ParamList param_list =
+      (new PairParamList_((new LastParamList_(b))->upcast(), a))->upcast();
+
+  Function myfunc = new Function_("myfunc", s.create_builtin_dupl()->upcast(),
+                                  param_list, body);
+
+  s.code_generator.generate(myfunc);
 
   s.module->print(llvm::errs(), nullptr);
 
