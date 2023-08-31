@@ -40,9 +40,14 @@ llvm::Type* CodeGenerator::map_type(ClassicType t) {
         return llvm::Type::getDoubleTy(*this->context);
       case classic_builtin_types::ANEF:
         return llvm::Type::getInt1Ty(*this->context);
+      default:
+        throw UnknownBuiltinType(
+            "cannot map ClassicType to llvm::Type. Builtin type is not one of "
+            "INT, DUPL, ANEF. ");
     }
   }
-  return nullptr;
+  throw CustomTypesNotSupported(
+      "cannot map ClassicType to llvm::Type. Custom types are not supported. ");
 }
 
 std::vector<llvm::Type*> CodeGenerator::generate(ParamList param_list) {

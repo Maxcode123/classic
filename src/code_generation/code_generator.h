@@ -42,7 +42,6 @@ class CodeGenerator {
   llvm::Type* generate(Param param);
 
   void generate_and_insert(Statement stm);
-  void generate(Statement stm) { generate_and_insert(stm); }
   llvm::Value* generate(AssignStatement stm);
   llvm::Value* generate(ExpressionStatement stm);
   llvm::Value* generate(ExodusStatement stm);
