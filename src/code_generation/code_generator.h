@@ -17,6 +17,7 @@
 #include "../code_generation/symbol_table.h"
 #include "../code_generation/validator.h"
 #include "../syntax/ast/nodes.h"
+#include "errors.h"
 
 #define INTEGER_BITSIZE 64
 

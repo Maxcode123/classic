@@ -185,7 +185,9 @@ llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
         break;
     }
   }
-  return nullptr;
+  throw UnknownBuiltinType(
+      "cannot generate BinaryOperationExpression. Builtin type is neither INT "
+      "nor DUPL. ");
 }
 
 llvm::Value* CodeGenerator::generate(ParenthesesExpression exp) {

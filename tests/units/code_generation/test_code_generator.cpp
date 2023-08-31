@@ -326,6 +326,16 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddFunctionCalls) {
   EXPECT_EQ(this->test_func->getInstructionCount(), instructions + 3);
 }
 
+TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationThrows) {
+  LiteralExpression left = new LiteralExpression_(100.3);
+  LiteralExpression right = new LiteralExpression_(3.0);
+  BinaryOperationExpression exp = new BinaryOperationExpression_(
+      BINARY_DIV, left->upcast(), right->upcast());
+  // exp builtin type is not set
+
+  EXPECT_THROW(this->code_generator.generate(exp), UnknownBuiltinType);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {
   Argument arg = new Argument_("myint", (new LiteralExpression_(10))->upcast());
   llvm::Value* value = this->code_generator.generate(arg);
