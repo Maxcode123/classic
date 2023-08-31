@@ -85,18 +85,14 @@ void CodeGenerator::generate_and_insert(Statement stm) {
       AssignStatement asn_stm = stm->downcast<AssignStatement>();
       llvm::Value* mem_ptr = this->proxy.get(asn_stm->lhs_id);
       if (mem_ptr == nullptr) {
-        mem_ptr = this->ir_builder->CreateAlloca(
-            this->map_type(asn_stm->rhs_expression->classic_type), nullptr,
-            asn_stm->lhs_id);
-        this->proxy.update(asn_stm->lhs_id, mem_ptr);
+        mem_ptr = this->allocate(asn_stm->rhs_expression->classic_type,
+                                 asn_stm->lhs_id);
       }
-      this->ir_builder->CreateStore(this->generate(asn_stm->rhs_expression),
-                                    mem_ptr);
+      this->store(this->generate(asn_stm->rhs_expression), mem_ptr);
       break;
     }
     case EXPRESSION_STATEMENT: {
-      this->ir_builder->Insert(
-          this->generate(stm->downcast<ExpressionStatement>()->expression));
+      this->generate(stm->downcast<ExpressionStatement>()->expression);
       break;
     }
     case EMPTY_STATEMENT:
@@ -227,4 +223,16 @@ std::vector<llvm::Value*> CodeGenerator::generate(EmptyArgumentList arg_list) {
 
 llvm::Value* CodeGenerator::generate(Argument arg) {
   return this->generate(arg->expression);
+}
+
+llvm::AllocaInst* CodeGenerator::allocate(ClassicType t, std::string name) {
+  llvm::AllocaInst* mem_ptr =
+      this->ir_builder->CreateAlloca(this->map_type(t), nullptr, name);
+  this->proxy.update(name, mem_ptr);
+  return mem_ptr;
+}
+
+llvm::StoreInst* CodeGenerator::store(llvm::Value* value,
+                                      llvm::Value* mem_ptr) {
+  return this->ir_builder->CreateStore(value, mem_ptr);
 }
