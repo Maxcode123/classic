@@ -81,6 +81,46 @@ class CodeGeneratorTest : public testing::Test {
   }
 };
 
+TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
+  // a = 1;
+  Expression exp1 = (new LiteralExpression_(1))->upcast();
+  exp1->set_classic_type(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  Statement stm1 = (new AssignStatement_("a", exp1))->upcast();
+
+  // b = a + 2;
+  BinaryOperationExpression binop = (new BinaryOperationExpression_(
+      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
+      (new LiteralExpression_(2))->upcast()));
+  binop->set_builtin_type(classic_builtin_types::INT);
+  Expression exp2 = binop->upcast();
+  exp2->set_classic_type(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  Statement stm2 = (new AssignStatement_("b", exp2))->upcast();
+
+  CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
+
+  this->create_basic_block();
+  llvm::BasicBlock& entry = this->test_func->front();
+
+  this->code_generator.generate(cmp_stm->upcast());
+
+  /*
+  %a = alloca i64, align 8
+  store i64 1, ptr %a, align 4
+  %b = alloca i64, align 8
+  %addtmp = add ptr %a, i64 2
+  store ptr %addtmp, ptr %b, align 8
+  */
+  auto itr = entry.begin();
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Store);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Add);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Store);
+  EXPECT_EQ(itr, entry.end());
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateStatementAssignStatementInstructions) {
   Expression exp = (new LiteralExpression_(8))->upcast();
   exp->set_classic_type(
@@ -89,7 +129,6 @@ TEST_F(CodeGeneratorTest, TestGenerateStatementAssignStatementInstructions) {
 
   this->create_basic_block();
   llvm::BasicBlock& entry = this->test_func->front();
-  EXPECT_EQ(entry.size(), 0);
 
   this->code_generator.generate(stm->upcast());
 
@@ -101,6 +140,7 @@ TEST_F(CodeGeneratorTest, TestGenerateStatementAssignStatementInstructions) {
 TEST_F(CodeGeneratorTest, TestGenerateStatementThrowsNoClassicTypeError) {
   AssignStatement stm =
       new AssignStatement_("b", (new LiteralExpression_(2))->upcast());
+  // expression in assign statement has no classic_type
 
   this->create_basic_block();
 

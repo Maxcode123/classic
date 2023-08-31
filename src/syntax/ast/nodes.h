@@ -479,6 +479,7 @@ class Expression_
     : virtual public BaseTypeASTNode_<Expression, ExpressionType> {
  public:
   ClassicType classic_type;
+
   Expression_(ParenthesesExpression exp) {
     set(PARENTHESES_EXPRESSION, (Expression)exp);
   }
@@ -495,6 +496,9 @@ class Expression_
     set(VARIABLE_EXPRESSION, (Expression)exp);
   }
   Expression_() {}
+
+  void set_classic_type(ClassicType t) { classic_type = t; }
+
   static std::string cls() { return "Expression"; }
 };
 

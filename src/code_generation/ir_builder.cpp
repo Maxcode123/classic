@@ -88,46 +88,24 @@ int main() {
 
   s.create_basic_block();
 
-  LiteralExpression left = new LiteralExpression_(12.36);
-  LiteralExpression right = new LiteralExpression_(9.0194);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_TIMES, left->upcast(), right->upcast());
-  exp->set_builtin_type(classic_builtin_types::DUPL);
-
-  s.store(s.code_generator.generate(exp),
-          s.allocate(llvm::Type::getFloatTy(*s.context), "result1"));
-
-  s.allocate_and_store(s.create_int64(5), llvm::Type::getInt64Ty(*s.context),
-                       "int1");
-  s.allocate_and_store(s.create_int64(10), llvm::Type::getInt64Ty(*s.context),
-                       "int2");
-
-  VariableExpression left2 = new VariableExpression_("int1");
-  VariableExpression right2 = new VariableExpression_("int2");
-  BinaryOperationExpression exp2 = new BinaryOperationExpression_(
-      BINARY_PLUS, left2->upcast(), right2->upcast());
-  exp2->set_builtin_type(classic_builtin_types::INT);
-
-  s.code_generator.generate(exp2);
-
-  FunctionCallExpression call1 =
-      new FunctionCallExpression_("func", (new EmptyArgumentList_())->upcast());
-  FunctionCallExpression call2 =
-      new FunctionCallExpression_("func", (new EmptyArgumentList_())->upcast());
-
-  BinaryOperationExpression exp3 = new BinaryOperationExpression_(
-      BINARY_PLUS, call1->upcast(), call2->upcast());
-  exp3->set_builtin_type(classic_builtin_types::INT);
-
-  s.code_generator.generate(exp3);
-
-  Expression lit = (new LiteralExpression_(8))->upcast();
-  lit->set_classic_type(
+  Expression exp1 = (new LiteralExpression_(1))->upcast();
+  exp1->set_classic_type(
       new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  Statement stm1 = (new AssignStatement_("a", exp1))->upcast();
 
-  AssignStatement stm = new AssignStatement_("a", lit);
+  // b = a + 2;
+  BinaryOperationExpression binop = (new BinaryOperationExpression_(
+      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
+      (new LiteralExpression_(2))->upcast()));
+  binop->set_builtin_type(classic_builtin_types::INT);
+  Expression exp2 = binop->upcast();
+  exp2->set_classic_type(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  Statement stm2 = (new AssignStatement_("b", exp2))->upcast();
 
-  s.code_generator.generate(stm->upcast());
+  CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
+
+  s.code_generator.generate(cmp_stm->upcast());
 
   s.module->print(llvm::errs(), nullptr);
 
