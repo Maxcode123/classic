@@ -88,32 +88,72 @@ class Script {
   ClassicBuiltinType create_builtin_dupl() {
     return new ClassicBuiltinType_(classic_builtin_types::DUPL);
   }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(T left,
+                                                       BinaryOperator op,
+                                                       T right) {
+    return new BinaryOperationExpression_(
+        op, (new LiteralExpression_(left))->upcast(),
+        (new LiteralExpression_(right))->upcast());
+  }
+
+  BinaryOperationExpression build_binary_operation_exp(const char* left,
+                                                       BinaryOperator op,
+                                                       const char* right) {
+    return new BinaryOperationExpression_(
+        op, (new VariableExpression_(left))->upcast(),
+        (new VariableExpression_(right))->upcast());
+  }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(T left,
+                                                       BinaryOperator op,
+                                                       const char* right) {
+    return new BinaryOperationExpression_(
+        op, (new LiteralExpression_(left))->upcast(),
+        (new VariableExpression_(right))->upcast());
+  }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(const char* left,
+                                                       BinaryOperator op,
+                                                       T right) {
+    return new BinaryOperationExpression_(
+        op, (new VariableExpression_(left))->upcast(),
+        (new LiteralExpression_(right))->upcast());
+  }
 };
 
 int main() {
   Script s = Script();
   s.init();
 
-  // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
-  BinaryOperationExpression binop = new BinaryOperationExpression_(
-      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
-      (new VariableExpression_("b"))->upcast());
-  binop->set_builtin_type(classic_builtin_types::DUPL);
-  ExodusStatement exodus = new ExodusStatement_(binop->upcast());
+  // oper: int add3(int c) { c = c + 1; c = c + 2; exodus c; }
+  ExodusStatement exodus =
+      new ExodusStatement_((new VariableExpression_("c"))->upcast());
 
-  FunctionBody body =
-      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
+  BinaryOperationExpression binop1 =
+      s.build_binary_operation_exp("c", BINARY_PLUS, 1);
+  binop1->set_builtin_type(classic_builtin_types::INT);
+  Statement stm1 = (new AssignStatement_("c", binop1->upcast()))->upcast();
 
-  Param a = new Param_(s.create_builtin_dupl()->upcast(), "a");
-  Param b = new Param_(s.create_builtin_dupl()->upcast(), "b");
-  ParamList param_list =
-      (new PairParamList_((new LastParamList_(b))->upcast(), a))->upcast();
+  BinaryOperationExpression binop2 =
+      s.build_binary_operation_exp("c", BINARY_PLUS, 2);
+  binop2->set_builtin_type(classic_builtin_types::INT);
+  Statement stm2 = (new AssignStatement_("c", binop2->upcast()))->upcast();
 
-  Function myfunc = new Function_("myfunc", s.create_builtin_dupl()->upcast(),
-                                  param_list, body);
+  CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
 
-  s.code_generator.generate(myfunc);
+  FunctionBody body = new FunctionBody_(cmp_stm->upcast(), exodus);
 
+  Param c = new Param_(s.create_builtin_int()->upcast(), "c");
+  ParamList param_list = (new LastParamList_(c))->upcast();
+
+  Function add3 =
+      new Function_("add3", s.create_builtin_int()->upcast(), param_list, body);
+
+  s.code_generator.generate(add3);
   s.module->print(llvm::errs(), nullptr);
 
   return 0;

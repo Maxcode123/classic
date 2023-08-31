@@ -177,7 +177,41 @@ TEST_F(CodeGeneratorTest, TestGenerateFunctionThrowsUnknownBuiltinTypeError) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateFunctionCompoundStatementBody) {
-  // oper: int myfunc(int c) { c = c + 1; c = c + 2; exodus c; }
+  // oper: int add3(int c) { c = c + 1; c = c + 2; exodus c; }
+  ExodusStatement exodus =
+      new ExodusStatement_((new VariableExpression_("c"))->upcast());
+
+  BinaryOperationExpression binop1 =
+      this->build_binary_operation_exp("c", BINARY_PLUS, 1);
+  binop1->set_builtin_type(classic_builtin_types::INT);
+  Statement stm1 = (new AssignStatement_("c", binop1->upcast()))->upcast();
+
+  BinaryOperationExpression binop2 =
+      this->build_binary_operation_exp("c", BINARY_PLUS, 2);
+  binop2->set_builtin_type(classic_builtin_types::INT);
+  Statement stm2 = (new AssignStatement_("c", binop2->upcast()))->upcast();
+
+  CompoundStatement cmp_stm = new CompoundStatement_(stm1, stm2);
+
+  FunctionBody body = new FunctionBody_(cmp_stm->upcast(), exodus);
+
+  Param c = new Param_(this->create_builtin_int()->upcast(), "c");
+  ParamList param_list = (new LastParamList_(c))->upcast();
+
+  Function add3 = new Function_("add3", this->create_builtin_int()->upcast(),
+                                param_list, body);
+
+  this->code_generator.generate(add3);
+
+  llvm::BasicBlock& add3_entry = this->module->getFunction("add3")->front();
+
+  auto itr = add3_entry.begin();
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Add);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Store);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Add);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Store);
+  EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Ret);
 }
 
 TEST_F(CodeGeneratorTest, TestGeneratePairParamListSize) {
