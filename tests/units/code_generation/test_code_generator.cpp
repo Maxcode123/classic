@@ -109,6 +109,14 @@ TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionAnef) {
   EXPECT_EQ(value->getBitWidth(), 1);
 }
 
+TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionStr) {
+  // this test should break once string are supported. kept here to remind of
+  // changes that should be made to generate(LiteralExpresion) when strings are
+  // introduced.
+  LiteralExpression exp = new LiteralExpression_(classic_builtin_types::STR);
+  EXPECT_THROW(this->code_generator.generate(exp), UnknownBuiltinType);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateVariableExpressionInt64) {
   this->create_basic_block();
   this->allocate_and_store(this->create_int64(5), INT64_TYPE, "int_var");

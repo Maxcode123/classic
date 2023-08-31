@@ -142,7 +142,9 @@ llvm::Value* CodeGenerator::generate(LiteralExpression exp) {
     case classic_builtin_types::ANEF:
       return llvm::ConstantInt::get(*this->context, llvm::APInt(1, 0, false));
   };
-  return nullptr;
+  throw UnknownBuiltinType(
+      "cannot generate code for LiteralExpression. Builtin type is not one of "
+      "INT, DUPL. ANEF. ");
 }
 
 llvm::Value* CodeGenerator::generate(VariableExpression exp) {
@@ -186,8 +188,8 @@ llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
     }
   }
   throw UnknownBuiltinType(
-      "cannot generate BinaryOperationExpression. Builtin type is neither INT "
-      "nor DUPL. ");
+      "cannot generate code for BinaryOperationExpression. Builtin type is "
+      "neither INT nor DUPL. ");
 }
 
 llvm::Value* CodeGenerator::generate(ParenthesesExpression exp) {
