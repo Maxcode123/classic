@@ -1,3 +1,7 @@
+oper: int gimme2(int a) { exodus 2; }
+
+oper: dupl pi() { exodus 3.14; }
+
 oper: int initus() {
 	exodus 0;
 }

@@ -9,17 +9,17 @@ ASTBuilder builder;
 ASTStackProxy proxy;
 ErrorHandler<ASTBuildError> handler;
 
-std::unique_ptr<llvm::LLVMContext> the_context;
-std::unique_ptr<llvm::Module> the_module;
-std::unique_ptr<llvm::IRBuilder<>> the_builder;
+llvm::Module *llvm_module;
 
 void update_ast() { ast.update(proxy.top()); }
 
-void init_module() {
-  the_context = std::make_unique<llvm::LLVMContext>();
-  the_module =
-      std::make_unique<llvm::Module>("generation_main.cpp", *the_context);
-  the_builder = std::make_unique<llvm::IRBuilder<>>(*the_context);
+CodeGenerator create_generator() {
+  llvm::LLVMContext *context = new llvm::LLVMContext();
+  llvm_module = new llvm::Module("IR code generation main", *context);
+  llvm::IRBuilder<> *ir_builder = new llvm::IRBuilder<>(*context);
+  SymbolTableProxy proxy = SymbolTableProxy(new SymbolTable_());
+
+  return CodeGenerator(proxy, context, llvm_module, ir_builder);
 }
 
 int main(int argc, char **argv) {
@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
   builder = ASTBuilder(proxy);
   handler = ErrorHandler<ASTBuildError>();
   pos = 0;
-  init_module();
+
+  CodeGenerator generator = create_generator();
 
   if (argc != 2) {
     fprintf(stderr, "usage: ./a.out filename\n");
@@ -41,8 +42,9 @@ int main(int argc, char **argv) {
     printf("\nParsing successfull\n");
   }
 
-  LastFunctionList f = ast.get<LastFunctionList>();
+  FunctionList f = ast.get<FunctionList>();
+  generator.generate(f);
 
-  the_module->print(llvm::errs(), nullptr);
+  llvm_module->print(llvm::errs(), nullptr);
   return 0;
 }
