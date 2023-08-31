@@ -118,6 +118,11 @@ TEST_F(ParamListIteratorTest, TestIteratePairParamListIterations) {
   EXPECT_EQ(c, 2);
 }
 
+TEST_F(ParamListIteratorTest, TestIterateEmptyParamList) {
+  ParamList p = (new EmptyParamList_())->upcast();
+  EXPECT_EQ(ParamListIterator(p), ParamListIterator(nullptr));
+}
+
 TEST_F(ParamListIteratorTest, TestLastParamListParam) {
   LastParamList last =
       this->build_last_param_list(classic_builtin_types::DUPL, "dupl");

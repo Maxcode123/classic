@@ -309,7 +309,12 @@ class ParamListIterator {
   using pointer = value_type *;
   using reference = value_type &;
 
-  ParamListIterator(ParamList p) { param_list = p; }
+  ParamListIterator(ParamList p) {
+    if (p == nullptr || p->type == EMPTY_PARAM_LIST)
+      param_list = nullptr;
+    else
+      param_list = p;
+  }
 
   reference operator*() const {
     if (this->param_list == nullptr) {
