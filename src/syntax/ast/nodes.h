@@ -515,7 +515,8 @@ class BinaryOperationExpression_ : virtual public Expression_ {
   BinaryOperator binary_operator;
   Expression left_expression;
   Expression right_expression;
-  classic_builtin_types::Type builtin_type = classic_builtin_types::ANEF;
+  classic_builtin_types::Type classic_builtin_type =
+      classic_builtin_types::ANEF;
 
   BinaryOperationExpression_(BinaryOperator binop, Expression left,
                              Expression right) {
@@ -526,7 +527,9 @@ class BinaryOperationExpression_ : virtual public Expression_ {
   BinaryOperationExpression_() {}
 
   Expression upcast() { return new Expression_(this); }
-  void set_builtin_type(classic_builtin_types::Type t) { builtin_type = t; }
+  void set_builtin_type(classic_builtin_types::Type t) {
+    classic_builtin_type = t;
+  }
 
   static std::string cls() { return "BinaryOperationExpression"; }
 

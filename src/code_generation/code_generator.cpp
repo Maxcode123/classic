@@ -158,7 +158,7 @@ llvm::Value* CodeGenerator::generate(FunctionCallExpression exp) {
 llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
   llvm::Value* left = this->generate(exp->left_expression);
   llvm::Value* right = this->generate(exp->right_expression);
-  if (exp->builtin_type == classic_builtin_types::INT) {
+  if (exp->classic_builtin_type == classic_builtin_types::INT) {
     switch (exp->binary_operator) {
       case BINARY_MINUS:
         return this->ir_builder->CreateSub(left, right, "subtmp");
@@ -171,7 +171,7 @@ llvm::Value* CodeGenerator::generate(BinaryOperationExpression exp) {
       default:
         break;
     }
-  } else if (exp->builtin_type == classic_builtin_types::DUPL) {
+  } else if (exp->classic_builtin_type == classic_builtin_types::DUPL) {
     switch (exp->binary_operator) {
       case BINARY_MINUS:
         return this->ir_builder->CreateFSub(left, right, "subtmp");
