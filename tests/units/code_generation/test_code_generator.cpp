@@ -87,13 +87,48 @@ class CodeGeneratorTest : public testing::Test {
   ClassicBuiltinType create_builtin_dupl() {
     return new ClassicBuiltinType_(classic_builtin_types::DUPL);
   }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(T left,
+                                                       BinaryOperator op,
+                                                       T right) {
+    return new BinaryOperationExpression_(
+        op, (new LiteralExpression_(left))->upcast(),
+        (new LiteralExpression_(right))->upcast());
+  }
+
+  BinaryOperationExpression build_binary_operation_exp(const char* left,
+                                                       BinaryOperator op,
+                                                       const char* right) {
+    return new BinaryOperationExpression_(
+        op, (new VariableExpression_(left))->upcast(),
+        (new VariableExpression_(right))->upcast());
+  }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(T left,
+                                                       BinaryOperator op,
+                                                       const char* right) {
+    return new BinaryOperationExpression_(
+        op, (new LiteralExpression_(left))->upcast(),
+        (new VariableExpression_(right))->upcast());
+  }
+
+  template <class T>
+  BinaryOperationExpression build_binary_operation_exp(const char* left,
+                                                       BinaryOperator op,
+                                                       T right) {
+    return new BinaryOperationExpression_(
+        op, (new VariableExpression_(left))->upcast(),
+        (new LiteralExpression_(right))->upcast());
+  }
 };
 
 TEST_F(CodeGeneratorTest, TestGenerateFunctionEmptyBody) {
   // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
-  BinaryOperationExpression binop = new BinaryOperationExpression_(
-      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
-      (new VariableExpression_("b"))->upcast());
+
+  BinaryOperationExpression binop =
+      this->build_binary_operation_exp("a", BINARY_PLUS, "b");
   binop->set_builtin_type(classic_builtin_types::DUPL);
   ExodusStatement exodus = new ExodusStatement_(binop->upcast());
 
@@ -118,6 +153,31 @@ TEST_F(CodeGeneratorTest, TestGenerateFunctionEmptyBody) {
   EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::FAdd);
   EXPECT_EQ((itr++)->getOpcode(), llvm::Instruction::Ret);
   EXPECT_EQ(itr, myfunc_entry.end());
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateFunctionThrowsUnknownBuiltinTypeError) {
+  // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
+  BinaryOperationExpression binop =
+      this->build_binary_operation_exp("a", BINARY_PLUS, "b");
+  // builtin type of binop is not set
+  ExodusStatement exodus = new ExodusStatement_(binop->upcast());
+
+  FunctionBody body =
+      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
+
+  Param a = new Param_(this->create_builtin_dupl()->upcast(), "a");
+  Param b = new Param_(this->create_builtin_dupl()->upcast(), "b");
+  ParamList param_list =
+      (new PairParamList_((new LastParamList_(b))->upcast(), a))->upcast();
+
+  Function myfunc = new Function_(
+      "myfunc", this->create_builtin_dupl()->upcast(), param_list, body);
+
+  EXPECT_THROW(this->code_generator.generate(myfunc), UnknownBuiltinType);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateFunctionCompoundStatementBody) {
+  // oper: int myfunc(int c) { c = c + 1; c = c + 2; exodus c; }
 }
 
 TEST_F(CodeGeneratorTest, TestGeneratePairParamListSize) {
@@ -158,9 +218,8 @@ TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
   Statement stm1 = (new AssignStatement_("a", exp1))->upcast();
 
   // b = a + 2;
-  BinaryOperationExpression binop = (new BinaryOperationExpression_(
-      BINARY_PLUS, (new VariableExpression_("a"))->upcast(),
-      (new LiteralExpression_(2))->upcast()));
+  BinaryOperationExpression binop =
+      this->build_binary_operation_exp("a", BINARY_PLUS, 2);
   binop->set_builtin_type(classic_builtin_types::INT);
   Expression exp2 = binop->upcast();
   exp2->set_classic_type(this->create_builtin_int()->upcast());
@@ -299,10 +358,8 @@ TEST_F(CodeGeneratorTest, TestGenerateFunctionCallTestFunc) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionSub) {
   // {literal} - {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(1);
-  LiteralExpression right = new LiteralExpression_(10);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_MINUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(1, BINARY_MINUS, 10);
   exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
@@ -313,10 +370,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionSub) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionFSub) {
   // {literal} - {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(10.25);
-  LiteralExpression right = new LiteralExpression_(1.20);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_MINUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(10.25, BINARY_MINUS, 1.20);
   exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
@@ -327,10 +382,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionFSub) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAdd) {
   // {literal} + {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(56);
-  LiteralExpression right = new LiteralExpression_(44);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_PLUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(56, BINARY_PLUS, 44);
   exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
@@ -341,10 +394,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAdd) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFAdd) {
   // {literal} + {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(.25);
-  LiteralExpression right = new LiteralExpression_(.21);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_PLUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(.25, BINARY_PLUS, .21);
   exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
@@ -355,10 +406,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFAdd) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationSDiv) {
   // {literal} / {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(100);
-  LiteralExpression right = new LiteralExpression_(3);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_DIV, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(100, BINARY_DIV, 3);
   exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
@@ -369,10 +418,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationSDiv) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFDiv) {
   // {literal} / {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(100.3);
-  LiteralExpression right = new LiteralExpression_(3.0);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_DIV, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(100.3, BINARY_DIV, 3.0);
   exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
@@ -383,10 +430,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFDiv) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationMul) {
   // {literal} * {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(55);
-  LiteralExpression right = new LiteralExpression_(6);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_TIMES, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(55, BINARY_TIMES, 6);
   exp->set_builtin_type(classic_builtin_types::INT);
 
   llvm::ConstantInt* value =
@@ -397,10 +442,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationMul) {
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFMul) {
   // {literal} * {literal} produces an llvm::Constant
-  LiteralExpression left = new LiteralExpression_(12.36);
-  LiteralExpression right = new LiteralExpression_(9.0194);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_TIMES, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(12.36, BINARY_TIMES, 9.0194);
   exp->set_builtin_type(classic_builtin_types::DUPL);
 
   llvm::ConstantFP* value =
@@ -415,10 +458,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddVariableExpressions) {
   this->allocate_and_store(this->create_int64(10), INT64_TYPE, "var_1");
   this->allocate_and_store(this->create_int64(20), INT64_TYPE, "var_2");
 
-  VariableExpression left = new VariableExpression_("var_1");
-  VariableExpression right = new VariableExpression_("var_2");
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_PLUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp("var_1", BINARY_PLUS, "var_2");
   exp->set_builtin_type(classic_builtin_types::INT);
 
   int instructions = this->test_func->getInstructionCount();
@@ -433,10 +474,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddLiteralToVariable) {
   this->create_basic_block();
   this->allocate_and_store(this->create_int64(23), INT64_TYPE, "var_1");
 
-  VariableExpression left = new VariableExpression_("var_1");
-  LiteralExpression right = new LiteralExpression_(5);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_PLUS, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp("var_1", BINARY_PLUS, 5);
   exp->set_builtin_type(classic_builtin_types::INT);
 
   int instructions = this->test_func->getInstructionCount();
@@ -467,10 +506,8 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddFunctionCalls) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationThrows) {
-  LiteralExpression left = new LiteralExpression_(100.3);
-  LiteralExpression right = new LiteralExpression_(3.0);
-  BinaryOperationExpression exp = new BinaryOperationExpression_(
-      BINARY_DIV, left->upcast(), right->upcast());
+  BinaryOperationExpression exp =
+      this->build_binary_operation_exp(100.3, BINARY_DIV, 3.0);
   // exp builtin type is not set
 
   EXPECT_THROW(this->code_generator.generate(exp), UnknownBuiltinType);
