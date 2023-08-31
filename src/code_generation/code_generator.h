@@ -41,7 +41,7 @@ class CodeGenerator {
   std::vector<llvm::Type*> generate(LastParamList param_list);
   llvm::Type* generate(Param param);
 
-  void generate_and_insert(Statement stm);
+  void generate(Statement stm);
   llvm::Value* generate(AssignStatement stm);
   llvm::Value* generate(ExpressionStatement stm);
   llvm::Value* generate(ExodusStatement stm);
@@ -64,4 +64,7 @@ class CodeGenerator {
   llvm::LLVMContext* context;
   llvm::Module* module;
   llvm::IRBuilder<>* ir_builder;
+
+  llvm::AllocaInst* allocate(ClassicType t, std::string name);
+  llvm::StoreInst* store(llvm::Value* value, llvm::Value* mem_ptr);
 };

@@ -46,8 +46,6 @@ class CodeGeneratorTest : public testing::Test {
     llvm::BasicBlock* bb =
         llvm::BasicBlock::Create(*this->context, "test_entry", this->test_func);
     this->ir_builder->SetInsertPoint(bb);
-    this->ir_builder->CreateRet(llvm::ConstantInt::get(
-        INT64_TYPE, llvm::APInt(INTEGER_BITSIZE, 7, true)));
   }
 
   llvm::AllocaInst* allocate(llvm::Type* t, std::string name) {
@@ -83,6 +81,33 @@ class CodeGeneratorTest : public testing::Test {
   }
 };
 
+TEST_F(CodeGeneratorTest, TestGenerateStatementAssignStatementInstructions) {
+  Expression exp = (new LiteralExpression_(8))->upcast();
+  exp->set_classic_type(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+  AssignStatement stm = new AssignStatement_("a", exp);
+
+  this->create_basic_block();
+  llvm::BasicBlock& entry = this->test_func->front();
+  EXPECT_EQ(entry.size(), 0);
+
+  this->code_generator.generate(stm->upcast());
+
+  EXPECT_EQ(entry.front().getName(), "a");
+  EXPECT_EQ(entry.front().getOpcode(), llvm::Instruction::Alloca);
+  EXPECT_EQ(entry.back().getOpcode(), llvm::InsertElementInst::Store);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateStatementThrowsNoClassicTypeError) {
+  AssignStatement stm =
+      new AssignStatement_("b", (new LiteralExpression_(2))->upcast());
+
+  this->create_basic_block();
+
+  EXPECT_THROW(this->code_generator.generate(stm->upcast()),
+               NoClassicTypeError);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionInt) {
   LiteralExpression exp = new LiteralExpression_(10);
   llvm::ConstantInt* value =
@@ -111,8 +136,8 @@ TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionAnef) {
 
 TEST_F(CodeGeneratorTest, TestGenerateLiteralExpressionStr) {
   // this test should break once string are supported. kept here to remind of
-  // changes that should be made to generate(LiteralExpresion) when strings are
-  // introduced.
+  // changes that should be made to generate(LiteralExpresion) when strings
+  // are introduced.
   LiteralExpression exp = new LiteralExpression_(classic_builtin_types::STR);
   EXPECT_THROW(this->code_generator.generate(exp), UnknownBuiltinType);
 }

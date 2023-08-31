@@ -25,12 +25,16 @@ llvm::Function* CodeGenerator::generate(Function func) {
                                        func->name + ":" + arg.getName()));
   }
 
-  this->generate_and_insert(func->body->statement);
+  this->generate(func->body->statement);
   this->ir_builder->CreateRet(this->generate(func->body->exodus));
   return f;
 }
 
 llvm::Type* CodeGenerator::map_type(ClassicType t) {
+  if (t == nullptr) {
+    throw NoClassicTypeError(
+        "cannot map ClassicType to llvm::Type, given type is null. ");
+  }
   if (t->type == BUILTIN_TYPE) {
     ClassicBuiltinType bt = t->downcast<ClassicBuiltinType>();
     switch (bt->type) {
@@ -73,12 +77,12 @@ llvm::Type* CodeGenerator::generate(Param param) {
   return this->map_type(param->classic_type);
 }
 
-void CodeGenerator::generate_and_insert(Statement stm) {
+void CodeGenerator::generate(Statement stm) {
   switch (stm->type) {
     case COMPOUND_STATEMENT: {
       CompoundStatement cmp_stm = stm->downcast<CompoundStatement>();
-      this->generate_and_insert(cmp_stm->first_statement);
-      this->generate_and_insert(cmp_stm->second_statement);
+      this->generate(cmp_stm->first_statement);
+      this->generate(cmp_stm->second_statement);
       break;
     }
     case ASSIGN_STATEMENT: {

@@ -121,6 +121,14 @@ int main() {
 
   s.code_generator.generate(exp3);
 
+  Expression lit = (new LiteralExpression_(8))->upcast();
+  lit->set_classic_type(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)));
+
+  AssignStatement stm = new AssignStatement_("a", lit);
+
+  s.code_generator.generate(stm->upcast());
+
   s.module->print(llvm::errs(), nullptr);
 
   return 0;
