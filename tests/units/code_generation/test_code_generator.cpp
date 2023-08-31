@@ -81,6 +81,43 @@ class CodeGeneratorTest : public testing::Test {
   }
 };
 
+TEST_F(CodeGeneratorTest, TestGeneratePairParamListSize) {
+  Param p = new Param_(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
+      "myint");
+  LastParamList param_list = new LastParamList_(p);
+  PairParamList pair_list = new PairParamList_(param_list->upcast(), p);
+
+  std::vector<llvm ::Type*> types = this->code_generator.generate(pair_list);
+  EXPECT_EQ(types.size(), 2);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateLastParamListSize) {
+  Param p = new Param_(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
+      "myint");
+  LastParamList param_list = new LastParamList_(p);
+
+  std::vector<llvm::Type*> types = this->code_generator.generate(param_list);
+  EXPECT_EQ(types.size(), 1);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateEmptyParamListSize) {
+  std::vector<llvm::Type*> types =
+      this->code_generator.generate(new EmptyParamList_());
+  EXPECT_EQ(types.size(), 0);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateParam) {
+  Param p = new Param_(
+      new ClassicType_(new ClassicBuiltinType_(classic_builtin_types::INT)),
+      "myint");
+
+  llvm::Type* t = this->code_generator.generate(p);
+  EXPECT_TRUE(t->isIntegerTy());
+  EXPECT_EQ(t->getIntegerBitWidth(), INTEGER_BITSIZE);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateStatementCompoundStatementInstructions) {
   // a = 1;
   Expression exp1 = (new LiteralExpression_(1))->upcast();

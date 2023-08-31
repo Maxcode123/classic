@@ -39,6 +39,7 @@ class CodeGenerator {
   std::vector<llvm::Type*> generate(ParamList param_list);
   std::vector<llvm::Type*> generate(PairParamList param_list);
   std::vector<llvm::Type*> generate(LastParamList param_list);
+  std::vector<llvm::Type*> generate(EmptyParamList param_list);
   llvm::Type* generate(Param param);
 
   void generate(Statement stm);

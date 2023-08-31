@@ -57,8 +57,9 @@ llvm::Type* CodeGenerator::map_type(ClassicType t) {
 std::vector<llvm::Type*> CodeGenerator::generate(ParamList param_list) {
   if (param_list->type == LAST_PARAM_LIST)
     return this->generate(param_list->downcast<LastParamList>());
-  else
+  else if (param_list->type == PAIR_PARAM_LIST)
     return this->generate(param_list->downcast<PairParamList>());
+  return this->generate(param_list->downcast<EmptyParamList>());
 }
 
 std::vector<llvm::Type*> CodeGenerator::generate(PairParamList param_list) {
@@ -71,6 +72,10 @@ std::vector<llvm::Type*> CodeGenerator::generate(PairParamList param_list) {
 std::vector<llvm::Type*> CodeGenerator::generate(LastParamList param_list) {
   std::vector<llvm::Type*> params{this->generate(param_list->param)};
   return params;
+}
+
+std::vector<llvm::Type*> CodeGenerator::generate(EmptyParamList param_list) {
+  return std::vector<llvm::Type*>{};
 }
 
 llvm::Type* CodeGenerator::generate(Param param) {
