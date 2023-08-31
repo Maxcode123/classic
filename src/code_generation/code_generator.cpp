@@ -1,10 +1,35 @@
 #include "code_generator.h"
 
+std::vector<llvm::Function*> CodeGenerator::generate(FunctionList func_list) {
+  if (func_list->type == PAIR_FUNCTION_LIST)
+    return this->generate(func_list->downcast<PairFunctionList>());
+  else
+    return this->generate(func_list->downcast<LastFunctionList>());
+}
+
+std::vector<llvm::Function*> CodeGenerator::generate(
+    PairFunctionList func_list) {
+  std::vector<llvm::Function*> funcs{this->generate(func_list->function)};
+  std::vector<llvm::Function*> next = this->generate(func_list->next);
+  funcs.insert(funcs.begin(), next.begin(), next.end());
+  return funcs;
+}
+
+std::vector<llvm::Function*> CodeGenerator::generate(
+    LastFunctionList func_list) {
+  return std::vector<llvm::Function*>{this->generate(func_list->function)};
+}
+
 llvm::Function* CodeGenerator::generate(Function func) {
   std::vector<llvm::Type*> params = this->generate(func->param_list);
   llvm::Type* ret = this->map_type(func->return_type);
 
-  llvm::FunctionType* ft = llvm::FunctionType::get(ret, params, false);
+  llvm::FunctionType* ft;
+  if (params.size() > 0)
+    ft = llvm::FunctionType::get(ret, params, false);
+  else
+    ft = llvm::FunctionType::get(ret, false);
+
   llvm::Function* f = llvm::Function::Create(
       ft, llvm::Function::ExternalLinkage, func->name, this->module);
 
@@ -71,8 +96,7 @@ std::vector<llvm::Type*> CodeGenerator::generate(PairParamList param_list) {
 }
 
 std::vector<llvm::Type*> CodeGenerator::generate(LastParamList param_list) {
-  std::vector<llvm::Type*> params{this->generate(param_list->param)};
-  return params;
+  return std::vector<llvm::Type*>{this->generate(param_list->param)};
 }
 
 std::vector<llvm::Type*> CodeGenerator::generate(EmptyParamList param_list) {

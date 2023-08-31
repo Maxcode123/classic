@@ -124,6 +124,42 @@ class CodeGeneratorTest : public testing::Test {
   }
 };
 
+TEST_F(CodeGeneratorTest, TestGeneratePairFunctionList) {
+  ExodusStatement exodus =
+      new ExodusStatement_((new LiteralExpression_(1))->upcast());
+  FunctionBody body =
+      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
+
+  Function f = new Function_("f", this->create_builtin_int()->upcast(),
+                             (new EmptyParamList_())->upcast(), body);
+  Function g = new Function_("g", this->create_builtin_int()->upcast(),
+                             (new EmptyParamList_())->upcast(), body);
+  PairFunctionList func_list =
+      new PairFunctionList_((new LastFunctionList_(f))->upcast(), g);
+
+  int count = this->module->getFunctionList().size();
+  this->code_generator.generate(func_list);
+
+  EXPECT_EQ(this->module->getFunctionList().size(), count + 2);
+}
+
+TEST_F(CodeGeneratorTest, TestGenerateLastFunctionList) {
+  // oper: f() { exodus 1;}
+  ExodusStatement exodus =
+      new ExodusStatement_((new LiteralExpression_(1))->upcast());
+  FunctionBody body =
+      new FunctionBody_((new EmptyStatement_())->upcast(), exodus);
+
+  Function f = new Function_("f", this->create_builtin_int()->upcast(),
+                             (new EmptyParamList_())->upcast(), body);
+  LastFunctionList func_list = new LastFunctionList_(f);
+
+  int count = this->module->getFunctionList().size();
+  this->code_generator.generate(func_list);
+
+  EXPECT_EQ(this->module->getFunctionList().size(), count + 1);
+}
+
 TEST_F(CodeGeneratorTest, TestGenerateFunctionEmptyBody) {
   // oper: dupl myfunc(dupl a, dupl b) { exodus a + b; }
 
