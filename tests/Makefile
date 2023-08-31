@@ -23,7 +23,7 @@ $(BIN)/test_parser: $(OBJ)/test_parser.o $(OBJ)/classical.tab.o $(OBJ)/mock_lex.
 
 
 .PHONY: unit-test
-unit-test: unit-test-parser unit-test-scanner unit-test-utils
+unit-test: unit-test-parser unit-test-scanner unit-test-utils unit-test-generator
 
 .PHONY: unit-test-generator
 unit-test-generator: test-code-generator
