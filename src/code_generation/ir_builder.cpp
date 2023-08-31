@@ -11,6 +11,7 @@
 #include <llvm/IR/Verifier.h>
 
 #include "../syntax/ast/nodes.h"
+#include "code_generator.h"
 #include "symbol_table.h"
 
 class Script {
@@ -23,6 +24,8 @@ class Script {
 
   SymbolTableProxy proxy;
 
+  CodeGenerator code_generator;
+
   llvm::Function* func;
 
   void init() {
@@ -31,6 +34,9 @@ class Script {
     this->ir_builder = new llvm::IRBuilder<>(*this->context);
 
     this->proxy = SymbolTableProxy(new SymbolTable_());
+
+    this->code_generator = CodeGenerator(this->proxy, this->context,
+                                         this->module, this->ir_builder);
 
     this->func = this->get_func();
   }
@@ -56,20 +62,23 @@ class Script {
     return mem_ptr;
   }
 
-  llvm::StoreInst* store(llvm::Value* v, llvm::AllocaInst* mem_ptr,
-                         std::string name) {
+  llvm::StoreInst* store(llvm::Value* v, llvm::AllocaInst* mem_ptr) {
     llvm::StoreInst* store = this->ir_builder->CreateStore(v, mem_ptr);
-    this->proxy.update(name, store);
     return store;
   }
 
   void allocate_and_store(llvm::Value* value, llvm::Type* t, std::string name) {
     llvm::AllocaInst* mem_ptr = this->allocate(t, name);
-    this->store(value, mem_ptr, name);
+    this->store(value, mem_ptr);
   }
 
   llvm::Value* load(llvm::Type* t, llvm::Value* mem_ptr, std::string name) {
     return this->ir_builder->CreateLoad(t, mem_ptr, name);
+  }
+
+  llvm::ConstantInt* create_int64(int val) {
+    return llvm::ConstantInt::get(*this->context,
+                                  llvm::APInt(INTEGER_BITSIZE, val, true));
   }
 };
 
@@ -79,20 +88,29 @@ int main() {
 
   s.create_basic_block();
 
-  llvm::AllocaInst* mem_ptr1 =
-      s.allocate(llvm::Type::getInt64Ty(*s.context), "var_1");
+  LiteralExpression left = new LiteralExpression_(12.36);
+  LiteralExpression right = new LiteralExpression_(9.0194);
+  BinaryOperationExpression exp = new BinaryOperationExpression_(
+      BINARY_TIMES, left->upcast(), right->upcast());
+  exp->set_builtin_type(classic_builtin_types::DUPL);
 
-  s.store(llvm::ConstantInt::get(*s.context, llvm::APInt(64, 10, false)),
-          mem_ptr1, "");
+  s.store(s.code_generator.generate(exp),
+          s.allocate(llvm::Type::getFloatTy(*s.context), "result1"));
 
-  llvm::AllocaInst* mem_ptr2 =
-      s.allocate(llvm::Type::getInt64Ty(*s.context), "var_2");
+  s.allocate_and_store(s.create_int64(5), llvm::Type::getInt64Ty(*s.context),
+                       "int1");
+  s.allocate_and_store(s.create_int64(10), llvm::Type::getInt64Ty(*s.context),
+                       "int2");
 
-  s.store(llvm::ConstantInt::get(*s.context, llvm::APInt(64, 15, false)),
-          mem_ptr2, "");
+  VariableExpression left2 = new VariableExpression_("int1");
+  VariableExpression right2 = new VariableExpression_("int2");
+  BinaryOperationExpression exp2 = new BinaryOperationExpression_(
+      BINARY_PLUS, left2->upcast(), right2->upcast());
+  exp2->set_builtin_type(classic_builtin_types::INT);
 
-  llvm::Value* res = s.ir_builder->CreateAdd((llvm::Value*)mem_ptr1,
-                                             (llvm::Value*)mem_ptr2, "addtmp");
+  s.code_generator.generate(exp2);
+  //   s.store(s.code_generator.generate(exp2),
+  //           s.allocate(llvm::Type::getInt64Ty(*s.context), "result2"));
 
   s.module->print(llvm::errs(), nullptr);
 
