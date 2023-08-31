@@ -150,13 +150,15 @@ TEST_F(CodeGeneratorTest, TestGenerateFunctionCallTestFunc) {
 
   this->create_basic_block();
 
-  llvm::CallInst* call = (llvm::CallInst*)this->code_generator.generate(exp);
+  llvm::CallInst* call =
+      llvm::dyn_cast<llvm::CallInst>(this->code_generator.generate(exp));
+  EXPECT_NE(call, nullptr);
   EXPECT_EQ(call->getCalledFunction(), this->test_func);
   EXPECT_TRUE(call->getAttributes().isEmpty());
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionSub) {
-  // {literal} - {literal} produces a llvm::Constant
+  // {literal} - {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(1);
   LiteralExpression right = new LiteralExpression_(10);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -170,7 +172,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionSub) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionFSub) {
-  // {literal} - {literal} produces a llvm::Constant
+  // {literal} - {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(10.25);
   LiteralExpression right = new LiteralExpression_(1.20);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -184,7 +186,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationExpressionFSub) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAdd) {
-  // {literal} + {literal} produces a llvm::Constant
+  // {literal} + {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(56);
   LiteralExpression right = new LiteralExpression_(44);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -198,7 +200,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAdd) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFAdd) {
-  // {literal} + {literal} produces a llvm::Constant
+  // {literal} + {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(.25);
   LiteralExpression right = new LiteralExpression_(.21);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -212,7 +214,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFAdd) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationSDiv) {
-  // {literal} / {literal} produces a llvm::Constant
+  // {literal} / {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(100);
   LiteralExpression right = new LiteralExpression_(3);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -226,7 +228,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationSDiv) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFDiv) {
-  // {literal} / {literal} produces a llvm::Constant
+  // {literal} / {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(100.3);
   LiteralExpression right = new LiteralExpression_(3.0);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -240,7 +242,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFDiv) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationMul) {
-  // {literal} * {literal} produces a llvm::Constant
+  // {literal} * {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(55);
   LiteralExpression right = new LiteralExpression_(6);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -254,7 +256,7 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationMul) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationFMul) {
-  // {literal} * {literal} produces a llvm::Constant
+  // {literal} * {literal} produces an llvm::Constant
   LiteralExpression left = new LiteralExpression_(12.36);
   LiteralExpression right = new LiteralExpression_(9.0194);
   BinaryOperationExpression exp = new BinaryOperationExpression_(
@@ -305,16 +307,23 @@ TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddLiteralToVariable) {
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateBinaryOperationAddFunctionCalls) {
+  // {func_call} + {func_call} produces two call instructions and one add
+  // instruction
   FunctionCallExpression left = new FunctionCallExpression_(
       "test_func", (new EmptyArgumentList_())->upcast());
   FunctionCallExpression right = new FunctionCallExpression_(
       "test_func", (new EmptyArgumentList_())->upcast());
   BinaryOperationExpression exp = new BinaryOperationExpression_(
       BINARY_PLUS, left->upcast(), right->upcast());
+  exp->set_builtin_type(classic_builtin_types::INT);
 
   this->create_basic_block();
-  llvm::Value* value = this->code_generator.generate(exp);
+
+  int instructions = this->test_func->getInstructionCount();
+  llvm::BinaryOperator* value =
+      llvm::dyn_cast<llvm::BinaryOperator>(this->code_generator.generate(exp));
   EXPECT_NE(value, nullptr);
+  EXPECT_EQ(this->test_func->getInstructionCount(), instructions + 3);
 }
 
 TEST_F(CodeGeneratorTest, TestGenerateArgumentType) {

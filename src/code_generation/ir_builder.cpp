@@ -109,8 +109,17 @@ int main() {
   exp2->set_builtin_type(classic_builtin_types::INT);
 
   s.code_generator.generate(exp2);
-  //   s.store(s.code_generator.generate(exp2),
-  //           s.allocate(llvm::Type::getInt64Ty(*s.context), "result2"));
+
+  FunctionCallExpression call1 =
+      new FunctionCallExpression_("func", (new EmptyArgumentList_())->upcast());
+  FunctionCallExpression call2 =
+      new FunctionCallExpression_("func", (new EmptyArgumentList_())->upcast());
+
+  BinaryOperationExpression exp3 = new BinaryOperationExpression_(
+      BINARY_PLUS, call1->upcast(), call2->upcast());
+  exp3->set_builtin_type(classic_builtin_types::INT);
+
+  s.code_generator.generate(exp3);
 
   s.module->print(llvm::errs(), nullptr);
 
