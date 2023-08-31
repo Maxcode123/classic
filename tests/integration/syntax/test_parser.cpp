@@ -47,6 +47,7 @@ TEST_F(ParserTest, TestMinimalInitus) {
   EXPECT_EQ(f->function->name, "initus");
   EXPECT_EQ(f->function->return_type->type, BUILTIN_TYPE);
   EXPECT_NE(f->function->body->statement->downcast<EmptyStatement>(), nullptr);
+  EXPECT_NE(f->function->param_list->downcast<EmptyParamList>(), nullptr);
 }
 
 /*

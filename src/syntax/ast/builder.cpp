@@ -79,7 +79,7 @@ Function ASTBuilder::build_initus_function() {
   TRY_CATCH_POP("InitusFunction", FunctionBody, body)
   Function initus = new Function_(
       "initus", (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast(),
-      new EmptyParamList_(), body);
+      (new EmptyParamList_())->upcast(), body);
   this->push(initus);
 #ifdef DEBUG_MODE
   std::cout << "built initus function\n";
@@ -134,8 +134,7 @@ Param ASTBuilder::build_param() {
   Param p = new Param_(type, name->semantic_value);
   this->push(p);
 #ifdef DEBUG_MODE
-  std::cout << "built Param " << type->semantic_value << " "
-            << name->semantic_value << "\n";
+  std::cout << "built Param \n";
 #endif
   return p;
 }
