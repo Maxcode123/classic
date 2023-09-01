@@ -28,6 +28,9 @@ unit-test: unit-test-parser unit-test-scanner unit-test-utils unit-test-generato
 .PHONY: unit-test-generator
 unit-test-generator: test-code-generator
 
+.PHONY: unit-test-validator
+unit-test-validator: test-semantic-validator
+
 .PHONY: unit-test-parser
 unit-test-parser: test-nodes test-builder
 
@@ -39,6 +42,10 @@ unit-test-utils: test-error-handler
 
 .PHONY: test-code-generator
 test-code-generator: $(BIN)/test_code_generator
+	$<
+
+.PHONY: test-semantic-validator
+test-semantic-validator: $(BIN)/test_validator
 	$<
 
 .PHONY: test-builder
@@ -60,6 +67,9 @@ test-tokens: $(BIN)/test_tokens
 $(BIN)/test_code_generator: $(OBJ)/nodes.o $(OBJ)/code_generator.o $(OBJ)/test_code_generator.o
 	$(CCTEST) -lLLVM-15
 
+$(BIN)/test_validator: $(OBJ)/validator.o $(OBJ)/nodes.o $(OBJ)/test_validator.OBJ
+	$(CCTEST)
+
 $(BIN)/test_builder: $(OBJ)/builder.o $(OBJ)/nodes.o $(OBJ)/test_builder.o
 	$(CCTEST)
 
@@ -77,6 +87,9 @@ $(OBJ)/%.o: $(TEST)/units/%.cpp
 	$(CC) $(ARGS) -c $< -o $@
 
 $(OBJ)/%.o: $(TEST)/units/code_generation/%.cpp
+	$(CC) $(ARGS) -c $< -o $@
+
+$(OBJ)/%.o: $(TEST)/units/semantics/%.cpp
 	$(CC) $(ARGS) -c $< -o $@
 
 $(OBJ)/%.o: $(TEST)/units/syntax/ast/%.cpp

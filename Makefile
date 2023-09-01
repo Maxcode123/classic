@@ -11,6 +11,7 @@ RM=rm -rf
 
 include src/lexical/Makefile
 include src/syntax/Makefile
+include src/semantics/Makefile
 include src/code_generation/Makefile
 include tests/Makefile
 
