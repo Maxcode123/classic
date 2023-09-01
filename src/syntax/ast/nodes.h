@@ -7,6 +7,7 @@
 #include <stack>
 #include <string>
 
+#include "../../utils/errors.h"
 #include "errors.h"
 
 #define DECL_TYPEDEF(cls) \
@@ -122,6 +123,18 @@ class ClassicType_
   ClassicType_(ClassicCustomType n) { set(CUSTOM_TYPE, (ClassicType)n); }
   ClassicType_() {}
 
+  bool eq(ClassicType t) {
+    if (this->type != t->type)
+      return false;
+    else if (t->type == BUILTIN_TYPE) {
+      return this->downcast<ClassicBuiltinType>()->eq(
+          t->downcast<ClassicBuiltinType>());
+    } else
+      throw CustomTypesNotSupported(
+          "cannot compare ClassicType(s) of type CUSTOM_TYPE. Custom types are "
+          "not supported.");
+  }
+
   static std::string cls() { return "ClassicType"; }
 };
 
@@ -130,6 +143,8 @@ class ClassicBuiltinType_ : virtual public ClassicType_ {
   classic_builtin_types::Type type;
   ClassicBuiltinType_(classic_builtin_types::Type t) { type = t; }
   ClassicType upcast() { return new ClassicType_(this); }
+
+  bool eq(ClassicBuiltinType t) { return this->type == t->type; }
 
  private:
   using ClassicType_::downcast;
@@ -665,6 +680,68 @@ class EmptyArgumentList_ : virtual public ArgumentList_ {
 
  private:
   using ArgumentList_::downcast;
+};
+
+class ArgumentListIterator {
+ public:
+  using iterator_category = std::forward_iterator_tag;
+  using difference_type = std::ptrdiff_t;
+  using value_type = Argument_;
+  using pointer = value_type *;
+  using reference = value_type &;
+
+  ArgumentListIterator(ArgumentList a) {
+    if (a == nullptr || a->type == EMPTY_ARG_LIST)
+      this->arg_list = nullptr;
+    else
+      this->arg_list = a;
+  }
+
+  reference operator*() const {
+    if (this->arg_list == nullptr) {
+      throw IteratorError("Cannot dereference empty argument list iterator.");
+    }
+    if (this->arg_list->type == PAIR_ARG_LIST)
+      return *(this->arg_list->downcast<PairArgumentList>()->argument);
+    else
+      return *(this->arg_list->downcast<LastArgumentList>()->argument);
+  }
+
+  pointer operator->() {
+    if (this->arg_list == nullptr)
+      throw IteratorError("Cannot reference empty argument list iterator.");
+    if (this->arg_list->type == PAIR_ARG_LIST)
+      return this->arg_list->downcast<PairArgumentList>()->argument;
+    else
+      return this->arg_list->downcast<LastArgumentList>()->argument;
+  }
+
+  ArgumentListIterator &operator++() {
+    if (this->arg_list->type == PAIR_ARG_LIST)
+      this->arg_list = this->arg_list->downcast<PairArgumentList>()->next;
+    else
+      this->arg_list = nullptr;
+    return *this;
+  }
+
+  ArgumentListIterator operator++(int) {
+    ArgumentListIterator tmp = *this;
+    ++(*this);
+    return tmp;
+  }
+
+  friend bool operator==(const ArgumentListIterator &a,
+                         const ArgumentListIterator &b) {
+    return a.arg_list == b.arg_list;
+  }
+
+  friend bool operator!=(const ArgumentListIterator &a,
+                         ArgumentListIterator &b) {
+    return a.arg_list != b.arg_list;
+  }
+
+ private:
+  ArgumentList arg_list;
 };
 
 class Argument_ : virtual public ASTNode_ {
