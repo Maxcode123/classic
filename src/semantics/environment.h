@@ -6,34 +6,48 @@
 
 #include "../syntax/ast/nodes.h"
 
-class VariableEnvironment {
+template <class T>
+class Environment {
  public:
-  VariableEnvironment() {}
-
-  void update(std::string name) { this->set.insert(name); }
-  bool contains(std::string name) {
-    return this->set.find(name) != this->set.end();
-  }
-  void clear() { this->set.clear(); }
-
- private:
-  std::unordered_set<std::string> set;
-};
-
-class FunctionEnvironment {
- public:
-  FunctionEnvironment() {}
-
-  void update(std::string name, FunctionSignature s) {
+  void update(std::string name, T t) {
     auto itr = map.find(name);
     if (itr == map.end())
-      map.insert(std::make_pair(name, s));
+      map.insert(std::make_pair(name, t));
     else
       itr->second = s;
   }
   bool contains(std::string name) { return map.find(name) != map.end(); }
+  T get(std::string name) {
+    auto v = map.find(name);
+    if (v != map.end()) return v->second;
+    return nullptr;
+  }
   void clear() { this->map.clear(); }
 
- private:
-  std::map<std::string, FunctionSignature> map;
+ protected:
+  std::map<std::string, T> map;
+};
+
+class VariableEnvironment : public Environment<ClassicType> {
+ public:
+  VariableEnvironment() {}
+};
+
+typedef class FunctionSignature_ {
+ public:
+  FunctionSignature_(Function func)
+      : FunctionSignature_(func->name, func->return_type, func->param_list) {}
+  FunctionSignature_(std::string n, ClassicType t, ParamList p) {
+    name = n;
+    return_type = t;
+    param_list = p;
+  }
+  std::string name;
+  ClassicType return_type;
+  ParamList param_list;
+}* FunctionSignature;
+
+class FunctionEnvironment : public Environment<FunctionSignature> {
+ public:
+  FunctionEnvironment() {}
 };

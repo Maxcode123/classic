@@ -67,7 +67,7 @@ test-tokens: $(BIN)/test_tokens
 $(BIN)/test_code_generator: $(OBJ)/nodes.o $(OBJ)/code_generator.o $(OBJ)/test_code_generator.o
 	$(CCTEST) -lLLVM-15
 
-$(BIN)/test_validator: $(OBJ)/validator.o $(OBJ)/nodes.o $(OBJ)/test_validator.OBJ
+$(BIN)/test_validator: $(OBJ)/validator.o $(OBJ)/nodes.o $(OBJ)/test_validator.o
 	$(CCTEST)
 
 $(BIN)/test_builder: $(OBJ)/builder.o $(OBJ)/nodes.o $(OBJ)/test_builder.o
