@@ -229,6 +229,18 @@ class LastFunctionList_ : virtual public FunctionList_ {
   using FunctionList_::downcast;
 };
 
+class FunctionSignature {
+ public:
+  FunctionSignature(std::string n, ClassicType t, ParamList p) {
+    name = n;
+    return_type = t;
+    param_list = p;
+  }
+  std::string name;
+  ClassicType return_type;
+  ParamList param_list;
+};
+
 class Function_ : virtual public ASTNode_ {
  public:
   std::string name;
@@ -244,6 +256,9 @@ class Function_ : virtual public ASTNode_ {
   Function_(char *n, ClassicType t, ParamList p, FunctionBody b);
   Function_() {}
 
+  FunctionSignature signature() {
+    return FunctionSignature(this->name, this->return_type, this->param_list);
+  }
   static std::string cls() { return "Function"; }
 };
 

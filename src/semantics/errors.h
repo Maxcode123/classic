@@ -4,20 +4,19 @@
 
 #define MEMBER(n, d) inline static const SemanticError n = SemanticError(#n, d)
 
+class SemanticError {
+ public:
+  SemanticError(std::string n) { name = n; }
+  SemanticError(std::string n, std::string d) {
+    name = n;
+    description = d;
+  }
+
+  std::string name;
+  std::string description;
+};
+
 class SemanticErrors {
- private:
-  class SemanticError {
-   public:
-    SemanticError(std::string n) { name = n; }
-    SemanticError(std::string n, std::string d) {
-      name = n;
-      description = d;
-    }
-
-    std::string name;
-    std::string description;
-  };
-
  public:
   MEMBER(UNDEFINED_VARIABLE,
          "Reference to variable that has not been previously defined.");
