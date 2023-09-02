@@ -1,53 +1,57 @@
 #include "analyzer.h"
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(FunctionList func_list) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    FunctionList func_list) {
   if (func_list->type == PAIR_FUNCTION_LIST)
     return this->analyze(func_list->downcast<PairFunctionList>());
   else
     return this->analyze(func_list->downcast<LastFunctionList>());
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     PairFunctionList func_list) {
-  std::vector<SemanticError> errs = this->analyze(func_list->function);
+  std::vector<SemanticErrorMessage> errs = this->analyze(func_list->function);
   return this->merge(errs, this->analyze(func_list->next));
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     LastFunctionList func_list) {
   return this->analyze(func_list->function);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(Function func) {
-  std::vector<SemanticError> errs1 = this->analyze(func->param_list);
-  std::vector<SemanticError> errs2 =
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Function func) {
+  std::vector<SemanticErrorMessage> errs1 = this->analyze(func->param_list);
+  std::vector<SemanticErrorMessage> errs2 =
       this->merge(errs1, this->analyze(func->body->statement));
   return this->merge(errs2, this->analyze(func->body->exodus));
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(ParamList param_list) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    ParamList param_list) {
   if (param_list->type == PAIR_PARAM_LIST)
     return this->analyze(param_list->downcast<PairParamList>());
   else if (param_list->type == LAST_PARAM_LIST)
     return this->analyze(param_list->downcast<LastParamList>());
-  return std::vector<SemanticError>{};
+  return std::vector<SemanticErrorMessage>{};
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(PairParamList param_list) {
-  std::vector<SemanticError> errs1 = this->analyze(param_list->param);
-  std::vector<SemanticError> errs2 = this->analyze(param_list->next);
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    PairParamList param_list) {
+  std::vector<SemanticErrorMessage> errs1 = this->analyze(param_list->param);
+  std::vector<SemanticErrorMessage> errs2 = this->analyze(param_list->next);
   return this->merge(errs1, errs2);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(LastParamList param_list) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    LastParamList param_list) {
   return this->analyze(param_list->param);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(Param param) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Param param) {
   return this->validator.validate(param);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(Statement stm) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Statement stm) {
   switch (stm->type) {
     case COMPOUND_STATEMENT:
       return this->analyze(stm->downcast<CompoundStatement>());
@@ -56,33 +60,37 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(Statement stm) {
     case EXPRESSION_STATEMENT:
       return this->analyze(stm->downcast<ExpressionStatement>());
     default:
-      return std::vector<SemanticError>{};
+      return std::vector<SemanticErrorMessage>{};
   }
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(CompoundStatement stm) {
-  std::vector<SemanticError> errs = this->analyze(stm->first_statement);
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    CompoundStatement stm) {
+  std::vector<SemanticErrorMessage> errs = this->analyze(stm->first_statement);
   return this->merge(errs, this->analyze(stm->second_statement));
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(AssignStatement stm) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    AssignStatement stm) {
   stm->rhs_expression->set_classic_type(
       this->type_deductor.deduce(stm->rhs_expression));
   return this->validator.validate(stm);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(ExpressionStatement stm) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    ExpressionStatement stm) {
   return this->analyze(stm->expression);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(ExodusStatement stm) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    ExodusStatement stm) {
   return this->analyze(stm->expression);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(Expression exp) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Expression exp) {
   switch (exp->type) {
     case LITERAL_EXPRESSION:
-      return std::vector<SemanticError>{};
+      return std::vector<SemanticErrorMessage>{};
     case VARIABLE_EXPRESSION:
       return this->analyze(exp->downcast<VariableExpression>());
     case FUNCTION_CALL_EXPRESSION:
@@ -92,15 +100,16 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(Expression exp) {
     case PARENTHESES_EXPRESSION:
       return this->analyze(exp->downcast<ParenthesesExpression>());
     default:
-      return std::vector<SemanticError>{};
+      return std::vector<SemanticErrorMessage>{};
   }
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(VariableExpression exp) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
+    VariableExpression exp) {
   return this->validator.validate(exp);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     FunctionCallExpression exp) {
   for (auto itr = ArgumentListIterator(exp->argument_list),
             end = ArgumentListIterator(nullptr);
@@ -112,9 +121,9 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(
   return this->validator.validate(exp);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     BinaryOperationExpression exp) {
-  std::vector<SemanticError> left;
+  std::vector<SemanticErrorMessage> left;
   if (exp->left_expression->type == BINARY_OPERATION_EXPRESSION) {
     left = this->analyze(exp->left_expression);
   } else {
@@ -123,7 +132,7 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(
     left = this->analyze(exp->left_expression);
   }
 
-  std::vector<SemanticError> right;
+  std::vector<SemanticErrorMessage> right;
   if (exp->right_expression->type == BINARY_OPERATION_EXPRESSION) {
     right = this->analyze(exp->right_expression);
   } else {
@@ -133,7 +142,7 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(
   }
 
   if (left.size() == 0 && right.size() == 0) {
-    std::vector<SemanticError> errs = this->validator.validate(exp);
+    std::vector<SemanticErrorMessage> errs = this->validator.validate(exp);
     if (errs.size() == 0) {
       exp->set_classic_type(exp->right_expression->classic_type);
       return errs;
@@ -144,13 +153,14 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(
   return this->merge(left, right);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::analyze(
+std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     ParenthesesExpression exp) {
   return this->analyze(exp->expression);
 }
 
-std::vector<SemanticError> SemanticAnalyzer::merge(
-    std::vector<SemanticError> errs1, std::vector<SemanticError> errs2) {
+std::vector<SemanticErrorMessage> SemanticAnalyzer::merge(
+    std::vector<SemanticErrorMessage> errs1,
+    std::vector<SemanticErrorMessage> errs2) {
   errs1.insert(errs1.begin(), errs2.begin(), errs2.end());
   return errs1;
 }

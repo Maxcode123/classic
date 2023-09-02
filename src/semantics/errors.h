@@ -1,45 +1,54 @@
 #pragma once
 
+#include <map>
 #include <string>
 
-#define MEMBER(n, d) inline static const SemanticError n = SemanticError(#n, d)
+enum SemanticError {
+  UNDEFINED_VARIABLE = 15,
+  UNDEFINED_FUNCTION,
+  UNDEFINED_TYPE,
 
-class SemanticError {
- public:
-  SemanticError(std::string n) { name = n; }
-  SemanticError(std::string n, std::string d) {
-    name = n;
-    description = d;
-  }
+  UNDECLARED_ARGUMENT,
 
-  std::string name;
-  std::string description;
+  INCOMPATIBLE_BINARY_OPERATION_TYPES,
+
+  WRONG_EXODUS_TYPE,
+  WRONG_ARGUMENT_TYPE,
+  WRONG_ARGUMENT_NUMBER,
+  WRONG_ASSIGNMENT_TYPE
 };
 
-class SemanticErrors {
+static std::map<SemanticError, std::string> error_type_descriptions = {
+    {UNDEFINED_VARIABLE,
+     "Reference to variable that has not been previously defined."},
+    {UNDEFINED_FUNCTION,
+     "Reference to function that has not been previously defined."},
+    {UNDEFINED_TYPE, "Reference to type that has not been previously defined."},
+    {UNDECLARED_ARGUMENT,
+     "Reference to argument (in function call) that has not been declared in "
+     "function signature."},
+    {INCOMPATIBLE_BINARY_OPERATION_TYPES,
+     "Operands of binary operation have different types."},
+    {WRONG_EXODUS_TYPE, "Exodus type does not match function signature."},
+    {WRONG_ARGUMENT_TYPE,
+     "Argument type (in function call) does not match function signature (but "
+     "argument has correct name)."},
+    {WRONG_ARGUMENT_NUMBER,
+     "Number of arguments (in function call) is less than in function "
+     "signature."},
+    {WRONG_ASSIGNMENT_TYPE, "Assignment to variable of different type."}
+
+};
+
+class SemanticErrorMessage {
  public:
-  MEMBER(UNDEFINED_VARIABLE,
-         "Reference to variable that has not been previously defined.");
-  MEMBER(UNDEFINED_FUNCTION,
-         "Reference to function that has not been previously defined.");
-  MEMBER(UNDEFINED_TYPE,
-         "Reference to type that has not been previously defined.");
+  SemanticErrorMessage(SemanticError error_type, std::string msg) {
+    error_type_description = error_type_descriptions.at(error_type);
+    message = msg;
+  }
 
-  MEMBER(UNDECLARED_ARGUMENT,
-         "Reference to argument (in function call) that has not been declared "
-         "in function signature.");
-
-  MEMBER(INCOMPATIBLE_BINARY_OPERATION_TYPES,
-         "Operands of binary operation have different types.");
-
-  MEMBER(WRONG_EXODUS_TYPE, "Exodus type does not match function signature.");
-  MEMBER(WRONG_ARGUMENT_TYPE,
-         "Argument type (in function call) does not match function signature "
-         "(but argument has correct name).");
-  MEMBER(WRONG_ARGUMENT_NUMBER,
-         "Number of arguments (in function call) is less than in function "
-         "signature.");
-  MEMBER(WRONG_ASSIGNMENT_TYPE, "Assignment to variable of different type.");
+  std::string message;
+  std::string error_type_description;
 };
 
 class TypeDeductionError : public std::exception {

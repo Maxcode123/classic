@@ -8,33 +8,20 @@
 
 class Validator {
  public:
-  Validator() {
-    functions_proxy = FunctionEnvironmentProxy(new FunctionEnvironment_());
-    variables_proxy = VariableEnvironmentProxy(new VariableEnvironment_());
-  }
-  Validator(FunctionEnvironmentProxy functions,
-            VariableEnvironmentProxy variables) {
-    functions_proxy = functions;
-    variables_proxy = variables;
-  }
+  Validator() {}
+  Validator(EnvironmentsProxy p) { proxy = p; }
 
-  std::vector<SemanticError> validate(Function func);
+  std::vector<SemanticErrorMessage> validate(Param param);
 
-  std::vector<SemanticError> validate(Param param);
+  std::vector<SemanticErrorMessage> validate(AssignStatement stm);
 
-  std::vector<SemanticError> validate(AssignStatement stm);
-  std::vector<SemanticError> validate(ExpressionStatement stm);
-  std::vector<SemanticError> validate(ExodusStatement stm);
+  std::vector<SemanticErrorMessage> validate(VariableExpression exp);
+  std::vector<SemanticErrorMessage> validate(FunctionCallExpression exp);
+  std::vector<SemanticErrorMessage> validate(BinaryOperationExpression exp);
 
-  std::vector<SemanticError> validate(VariableExpression exp);
-  std::vector<SemanticError> validate(FunctionCallExpression exp);
-  std::vector<SemanticError> validate(BinaryOperationExpression exp);
-  std::vector<SemanticError> validate(ParenthesesExpression exp);
-
-  std::vector<SemanticError> compare(ParamList param_list,
-                                     ArgumentList arg_list);
+  std::vector<SemanticErrorMessage> compare(ParamList param_list,
+                                            ArgumentList arg_list);
 
  private:
-  FunctionEnvironmentProxy functions_proxy;
-  VariableEnvironmentProxy variables_proxy;
+  EnvironmentsProxy proxy;
 };
