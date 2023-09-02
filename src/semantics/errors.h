@@ -41,3 +41,13 @@ class SemanticErrors {
          "signature.");
   MEMBER(WRONG_ASSIGNMENT_TYPE, "Assignment to variable of different type.");
 };
+
+class TypeDeductionError : public std::exception {
+ public:
+  const char *what() { return message.c_str(); }
+  TypeDeductionError(char *msg) { message = msg; }
+  TypeDeductionError(const std::string msg) { message = msg; }
+
+ private:
+  std::string message;
+};

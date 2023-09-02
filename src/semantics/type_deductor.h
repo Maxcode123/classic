@@ -8,9 +8,7 @@ class TypeDeductor {
   TypeDeductor(EnvironmentsProxy p) { proxy = p; }
   TypeDeductor() {}
 
-  ClassicType deduce(Argument arg);
   ClassicType deduce(Expression exp);
-  ClassicType deduce(VariableExpression exp);
   ClassicType deduce(FunctionCallExpression exp);
 
  private:

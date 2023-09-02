@@ -21,6 +21,7 @@ DECL_TYPEDEF(BinaryOperatorASTNode)
 DECL_TYPEDEF(ClassicType)
 DECL_TYPEDEF(ClassicBuiltinType)
 DECL_TYPEDEF(ClassicCustomType)
+DECL_TYPEDEF(ClassicIndefinableType)
 DECL_TYPEDEF(Program)
 DECL_TYPEDEF(ClassdefList)
 DECL_TYPEDEF(PairClassdefList)
@@ -114,13 +115,16 @@ class BinaryOperatorASTNode_ : virtual public ASTNode_ {
   static std::string cls() { return "BinaryOperatorASTNode"; }
 };
 
-enum ClassicTypeGroup { BUILTIN_TYPE, CUSTOM_TYPE };
+enum ClassicTypeGroup { BUILTIN_TYPE, CUSTOM_TYPE, INDEFINABLE_TYPE };
 
 class ClassicType_
     : virtual public BaseTypeASTNode_<ClassicType, ClassicTypeGroup> {
  public:
   ClassicType_(ClassicBuiltinType n) { set(BUILTIN_TYPE, (ClassicType)n); };
   ClassicType_(ClassicCustomType n) { set(CUSTOM_TYPE, (ClassicType)n); }
+  ClassicType_(ClassicIndefinableType n) {
+    set(INDEFINABLE_TYPE, (ClassicType)n);
+  }
   ClassicType_() {}
 
   bool eq(ClassicType t) {
@@ -154,6 +158,15 @@ class ClassicCustomType_ : virtual public ClassicType_ {
  public:
   std::string type_name;
   ClassicCustomType_(std::string n) { type_name = n; }
+  ClassicType upcast() { return new ClassicType_(this); }
+
+ private:
+  using ClassicType_::downcast;
+};
+
+class ClassicIndefinableType_ : virtual public ClassicType_ {
+ public:
+  ClassicIndefinableType_() {}
   ClassicType upcast() { return new ClassicType_(this); }
 
  private:
@@ -605,7 +618,6 @@ class LiteralExpression_ : virtual public Expression_ {
   static std::string cls() { return "LiteralExpression"; }
 
  private:
-  using Expression_::classic_type;
   using Expression_::downcast;
 
   void set(std::string str, classic_builtin_types::Type t) {
