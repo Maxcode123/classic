@@ -6,9 +6,18 @@
 
 #include "../syntax/ast/nodes.h"
 
+#define DECL_TYPEDEF(cls) \
+  class cls##_;           \
+  typedef cls##_* cls;
+
+DECL_TYPEDEF(VariableEnvironment)
+DECL_TYPEDEF(FunctionSignature)
+DECL_TYPEDEF(FunctionEnvironment)
+
 template <class T>
 class Environment {
  public:
+  typedef T T_type;
   void update(std::string name, T t) {
     auto itr = map.find(name);
     if (itr == map.end())
@@ -28,23 +37,24 @@ class Environment {
   std::map<std::string, T> map;
 };
 
-template <class T>
+template <class T_env>
 class EnvironmentProxy {
  public:
-  void update(std::string name, T t) { env->update(name, t); }
+  void update(std::string name, T_env::T_type t) { env->update(name, t); }
   bool contains(std::string name) { return env->contains(name); }
-  T get(std::string name) { return env->get(name); }
+  T_env::T_type get(std::string name) { return env->get(name); }
   void clear() { env->clear(); }
 
  protected:
-  T env;
+  T_env* env;
 };
 
-typedef class VariableEnvironment_
-    : public Environment<ClassicType>{public : VariableEnvironment_(){}} *
-      VariableEnvironment;
+class VariableEnvironment_ : public Environment<ClassicType> {
+ public:
+  VariableEnvironment_() {}
+};
 
-typedef class FunctionSignature_ {
+class FunctionSignature_ {
  public:
   FunctionSignature_(Function func)
       : FunctionSignature_(func->name, func->return_type, func->param_list) {}
@@ -56,22 +66,56 @@ typedef class FunctionSignature_ {
   std::string name;
   ClassicType return_type;
   ParamList param_list;
-}* FunctionSignature;
+};
 
-typedef class FunctionEnvironment_
-    : public Environment<FunctionSignature>{public : FunctionEnvironment_(){}} *
-      FunctionEnvironment;
+class FunctionEnvironment_ : public Environment<FunctionSignature> {
+ public:
+  FunctionEnvironment_() {}
+};
 
-class VariableEnvironmentProxy
-    : protected EnvironmentProxy<VariableEnvironment> {
+class VariableEnvironmentProxy : public EnvironmentProxy<VariableEnvironment_> {
  public:
   VariableEnvironmentProxy(VariableEnvironment e) { env = e; }
   VariableEnvironmentProxy() {}
 };
 
-class FunctionEnvironmentProxy
-    : protected EnvironmentProxy<FunctionEnvironment> {
+class FunctionEnvironmentProxy : public EnvironmentProxy<FunctionEnvironment_> {
  public:
   FunctionEnvironmentProxy(FunctionEnvironment e) { env = e; }
   FunctionEnvironmentProxy() {}
+};
+
+class EnvironmentsProxy {
+ public:
+  EnvironmentsProxy(VariableEnvironmentProxy vars,
+                    FunctionEnvironmentProxy funcs) {
+    variables_proxy = vars;
+    functions_proxy = funcs;
+  }
+
+  void update_function(std::string name, FunctionSignature fs) {
+    functions_proxy.update(name, fs);
+  }
+  bool contains_function(std::string name) {
+    return functions_proxy.contains(name);
+  }
+  FunctionSignature get_function(std::string name) {
+    return functions_proxy.get(name);
+  }
+  void clear_functions() { functions_proxy.clear(); }
+
+  void update_variable(std::string name, ClassicType t) {
+    variables_proxy.update(name, t);
+  }
+  bool contains_variable(std::string name) {
+    return variables_proxy.contains(name);
+  }
+  ClassicType get_variable(std::string name) {
+    return variables_proxy.get(name);
+  }
+  void clear_variables() { variables_proxy.clear(); }
+
+ private:
+  VariableEnvironmentProxy variables_proxy;
+  FunctionEnvironmentProxy functions_proxy;
 };
