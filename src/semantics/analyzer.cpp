@@ -114,11 +114,34 @@ std::vector<SemanticError> SemanticAnalyzer::analyze(
 
 std::vector<SemanticError> SemanticAnalyzer::analyze(
     BinaryOperationExpression exp) {
-  exp->left_expression->set_classic_type(
-      this->type_deductor.deduce(exp->left_expression));
-  exp->right_expression->set_classic_type(
-      this->type_deductor.deduce(exp->right_expression));
-  return this->validator.validate(exp);
+  std::vector<SemanticError> left;
+  if (exp->left_expression->type == BINARY_OPERATION_EXPRESSION) {
+    left = this->analyze(exp->left_expression);
+  } else {
+    exp->left_expression->set_classic_type(
+        this->type_deductor.deduce(exp->left_expression));
+    left = this->analyze(exp->left_expression);
+  }
+
+  std::vector<SemanticError> right;
+  if (exp->right_expression->type == BINARY_OPERATION_EXPRESSION) {
+    right = this->analyze(exp->right_expression);
+  } else {
+    exp->right_expression->set_classic_type(
+        this->type_deductor.deduce(exp->right_expression));
+    right = this->analyze(exp->right_expression);
+  }
+
+  if (left.size() == 0 && right.size() == 0) {
+    std::vector<SemanticError> errs = this->validator.validate(exp);
+    if (errs.size() == 0) {
+      exp->set_classic_type(exp->right_expression->classic_type);
+      return errs;
+    }
+    this->merge(right, errs);
+  }
+  exp->set_classic_type((new ClassicIndefinableType_())->upcast());
+  return this->merge(left, right);
 }
 
 std::vector<SemanticError> SemanticAnalyzer::analyze(
