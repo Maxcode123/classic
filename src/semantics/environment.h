@@ -92,6 +92,7 @@ class EnvironmentsProxy {
     variables_proxy = vars;
     functions_proxy = funcs;
   }
+  EnvironmentsProxy() {}
 
   void update_function(std::string name, FunctionSignature fs) {
     functions_proxy.update(name, fs);
