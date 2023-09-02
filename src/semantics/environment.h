@@ -28,10 +28,21 @@ class Environment {
   std::map<std::string, T> map;
 };
 
-class VariableEnvironment : public Environment<ClassicType> {
+template <class T>
+class EnvironmentProxy {
  public:
-  VariableEnvironment() {}
+  void update(std::string name, T t) { env->update(name, t); }
+  bool contains(std::string name) { return env->contains(name); }
+  T get(std::string name) { return env->get(name); }
+  void clear() { env->clear(); }
+
+ protected:
+  T env;
 };
+
+typedef class VariableEnvironment_
+    : public Environment<ClassicType>{public : VariableEnvironment_(){}} *
+      VariableEnvironment;
 
 typedef class FunctionSignature_ {
  public:
@@ -47,7 +58,20 @@ typedef class FunctionSignature_ {
   ParamList param_list;
 }* FunctionSignature;
 
-class FunctionEnvironment : public Environment<FunctionSignature> {
+typedef class FunctionEnvironment_
+    : public Environment<FunctionSignature>{public : FunctionEnvironment_(){}} *
+      FunctionEnvironment;
+
+class VariableEnvironmentProxy
+    : protected EnvironmentProxy<VariableEnvironment> {
  public:
-  FunctionEnvironment() {}
+  VariableEnvironmentProxy(VariableEnvironment e) { env = e; }
+  VariableEnvironmentProxy() {}
+};
+
+class FunctionEnvironmentProxy
+    : protected EnvironmentProxy<FunctionEnvironment> {
+ public:
+  FunctionEnvironmentProxy(FunctionEnvironment e) { env = e; }
+  FunctionEnvironmentProxy() {}
 };

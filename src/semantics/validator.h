@@ -9,12 +9,13 @@
 class Validator {
  public:
   Validator() {
-    functions_env = FunctionEnvironment();
-    function_variables_env = VariableEnvironment();
+    functions_proxy = FunctionEnvironmentProxy(new FunctionEnvironment_());
+    variables_proxy = VariableEnvironmentProxy(new VariableEnvironment_());
   }
-  Validator(FunctionEnvironment functions, VariableEnvironment variables) {
-    functions_env = functions;
-    function_variables_env = variables;
+  Validator(FunctionEnvironmentProxy functions,
+            VariableEnvironmentProxy variables) {
+    functions_proxy = functions;
+    variables_proxy = variables;
   }
 
   std::vector<SemanticError> validate(Function func);
@@ -34,6 +35,6 @@ class Validator {
                                      ArgumentList arg_list);
 
  private:
-  FunctionEnvironment functions_env;
-  VariableEnvironment function_variables_env;
+  FunctionEnvironmentProxy functions_proxy;
+  VariableEnvironmentProxy variables_proxy;
 };
