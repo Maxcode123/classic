@@ -28,7 +28,8 @@ static std::map<SemanticError, std::string> error_type_descriptions = {
      "Reference to argument (in function call) that has not been declared in "
      "function signature."},
     {INCOMPATIBLE_BINARY_OPERATION_TYPES,
-     "Operands of binary operation have different types."},
+     "Operands of binary operation have different types or an operand has "
+     "custom type."},
     {WRONG_EXODUS_TYPE, "Exodus type does not match function signature."},
     {WRONG_ARGUMENT_TYPE,
      "Argument type (in function call) does not match function signature (but "
@@ -43,11 +44,18 @@ static std::map<SemanticError, std::string> error_type_descriptions = {
 class SemanticErrorMessage {
  public:
   SemanticErrorMessage(SemanticError error_type, std::string msg) {
+    type = error_type;
     error_type_description = error_type_descriptions.at(error_type);
     message = msg;
   }
+  SemanticErrorMessage(SemanticError error_type) {
+    type = error_type;
+    error_type_description = error_type_descriptions.at(error_type);
+    message = error_type_description;
+  }
 
   std::string message;
+  SemanticError type;
   std::string error_type_description;
 };
 

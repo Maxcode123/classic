@@ -145,8 +145,7 @@ TEST_F(ParamListIteratorTest, TestIterateLastParamListIterations) {
   ParamList p = (new LastParamList_(this->build_param()))->upcast();
   int c = 0;
   for (auto it = ParamListIterator(p), end = ParamListIterator(nullptr);
-       it != end; ++it) {
-    c++;
+       it != end; ++it, ++c) {
   }
   EXPECT_EQ(c, 1);
 }
@@ -157,8 +156,7 @@ TEST_F(ParamListIteratorTest, TestIteratePairParamListIterations) {
                     ->upcast();
   int c = 0;
   for (auto it = ParamListIterator(p), end = ParamListIterator(nullptr);
-       it != end; ++it) {
-    c++;
+       it != end; ++it, ++c) {
   }
   EXPECT_EQ(c, 2);
 }
