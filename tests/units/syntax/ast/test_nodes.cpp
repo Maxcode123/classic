@@ -82,6 +82,51 @@ TEST(NodesTest, TestEmptyStatementUpcast) {
   EXPECT_EQ(stm->type, EMPTY_STATEMENT);
 }
 
+TEST(NodesTest, TestEqClassicTypeBuiltin) {
+  ClassicType t1 =
+      (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast();
+  ClassicType t2 =
+      (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast();
+  EXPECT_TRUE(eq(t1, t2));
+}
+
+TEST(NodesTest, TestNEqClassicTypeBuiltin) {
+  ClassicType t1 =
+      (new ClassicBuiltinType_(classic_builtin_types::INT))->upcast();
+  ClassicType t2 =
+      (new ClassicBuiltinType_(classic_builtin_types::DUPL))->upcast();
+  EXPECT_FALSE(eq(t1, t2));
+}
+
+TEST(NodesTest, TestNEqClassicType) {
+  ClassicType t1 = (new ClassicCustomType_("myclass"))->upcast();
+  ClassicType t2 =
+      (new ClassicBuiltinType_(classic_builtin_types::DUPL))->upcast();
+  EXPECT_FALSE(eq(t1, t2));
+}
+
+TEST(NodesTest, TestEqClassicTypeIndefinable) {
+  ClassicType t1 = (new ClassicIndefinableType_())->upcast();
+  ClassicType t2 = (new ClassicIndefinableType_())->upcast();
+  EXPECT_TRUE(eq(t1, t2));
+}
+
+TEST(NodesTest, TestStrClassicTypeBuiltin) {
+  ClassicType t =
+      (new ClassicBuiltinType_(classic_builtin_types::STR))->upcast();
+  EXPECT_EQ(str(t), "str");
+}
+
+TEST(NodesTest, TestStrClassicTypeCustom) {
+  ClassicType t = (new ClassicCustomType_("Person"))->upcast();
+  EXPECT_EQ(str(t), "Person");
+}
+
+TEST(NodesTest, TestStrClassicTypeIndefinable) {
+  ClassicType t = (new ClassicIndefinableType_())->upcast();
+  EXPECT_EQ(str(t), "indefinable");
+}
+
 class ParamListIteratorTest : public testing::Test {
  protected:
   Param build_param(classic_builtin_types::Type t = classic_builtin_types::INT,

@@ -127,25 +127,6 @@ class ClassicType_
   }
   ClassicType_() {}
 
-  bool eq(ClassicType t) {
-    if (this->type != t->type)
-      return false;
-    else if (t->type == BUILTIN_TYPE) {
-      return this->downcast<ClassicBuiltinType>()->eq(
-          t->downcast<ClassicBuiltinType>());
-    } else
-      throw CustomTypesNotSupported(
-          "cannot compare ClassicType(s) of type CUSTOM_TYPE. Custom types are "
-          "not supported.");
-  }
-  std::string str() {
-    if (this->type == BUILTIN_TYPE)
-      return this->downcast<ClassicBuiltinType>()->str();
-    else if (this->type == CUSTOM_TYPE)
-      return this->downcast<ClassicCustomType>()->type_name;
-    return "indefinable";
-  }
-
   static std::string cls() { return "ClassicType"; }
 };
 
@@ -154,22 +135,6 @@ class ClassicBuiltinType_ : virtual public ClassicType_ {
   classic_builtin_types::Type type;
   ClassicBuiltinType_(classic_builtin_types::Type t) { type = t; }
   ClassicType upcast() { return new ClassicType_(this); }
-
-  bool eq(ClassicBuiltinType t) { return this->type == t->type; }
-  std::string str() {
-    switch (this->type) {
-      case classic_builtin_types::ANEF:
-        return "anef";
-      case classic_builtin_types::DUPL:
-        return "dupl";
-      case classic_builtin_types::INT:
-        return "int";
-      case classic_builtin_types::STR:
-        return "str";
-      default:
-        return "unknown";
-    }
-  }
 
  private:
   using ClassicType_::downcast;
@@ -193,6 +158,14 @@ class ClassicIndefinableType_ : virtual public ClassicType_ {
  private:
   using ClassicType_::downcast;
 };
+
+bool eq(ClassicType t1, ClassicType t2);
+
+bool eq(ClassicBuiltinType t1, ClassicBuiltinType t2);
+
+std::string str(ClassicType t);
+
+std::string str(ClassicBuiltinType t);
 
 class Program_ : virtual public ASTNode_ {
  public:

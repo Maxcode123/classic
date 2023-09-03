@@ -64,3 +64,44 @@ Argument_::Argument_(char* n, Expression exp) {
   this->name = _name;
   this->expression = exp;
 }
+
+bool eq(ClassicType t1, ClassicType t2) {
+  if (t1->type != t2->type)
+    return false;
+  else if (t1->type == BUILTIN_TYPE) {
+    return eq(t1->downcast<ClassicBuiltinType>(),
+              t2->downcast<ClassicBuiltinType>());
+  } else if (t1->type == INDEFINABLE_TYPE) {
+    return true;
+  } else
+    throw CustomTypesNotSupported(
+        "cannot compare ClassicType(s) of type CUSTOM_TYPE. Custom types are "
+        "not supported.");
+}
+
+bool eq(ClassicBuiltinType t1, ClassicBuiltinType t2) {
+  return t1->type == t2->type;
+}
+
+std::string str(ClassicType t) {
+  if (t->type == BUILTIN_TYPE)
+    return str(t->downcast<ClassicBuiltinType>());
+  else if (t->type == CUSTOM_TYPE)
+    return t->downcast<ClassicCustomType>()->type_name;
+  return "indefinable";
+}
+
+std::string str(ClassicBuiltinType t) {
+  switch (t->type) {
+    case classic_builtin_types::ANEF:
+      return "anef";
+    case classic_builtin_types::DUPL:
+      return "dupl";
+    case classic_builtin_types::INT:
+      return "int";
+    case classic_builtin_types::STR:
+      return "str";
+    default:
+      return "unknown";
+  }
+}
