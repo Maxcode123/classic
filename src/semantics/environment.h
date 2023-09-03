@@ -5,10 +5,7 @@
 #include <unordered_set>
 
 #include "../syntax/ast/nodes.h"
-
-#define DECL_TYPEDEF(cls) \
-  class cls##_;           \
-  typedef cls##_* cls;
+#include "../utils/macros.h"
 
 DECL_TYPEDEF(VariableEnvironment)
 DECL_TYPEDEF(FunctionSignature)
@@ -23,7 +20,7 @@ class Environment {
     if (itr == map.end())
       map.insert(std::make_pair(name, t));
     else
-      itr->second = s;
+      itr->second = t;
   }
   bool contains(std::string name) { return map.find(name) != map.end(); }
   T get(std::string name) {
@@ -40,9 +37,11 @@ class Environment {
 template <class T_env>
 class EnvironmentProxy {
  public:
-  void update(std::string name, T_env::T_type t) { env->update(name, t); }
+  void update(std::string name, typename T_env::T_type t) {
+    env->update(name, t);
+  }
   bool contains(std::string name) { return env->contains(name); }
-  T_env::T_type get(std::string name) { return env->get(name); }
+  typename T_env::T_type get(std::string name) { return env->get(name); }
   void clear() { env->clear(); }
 
  protected:

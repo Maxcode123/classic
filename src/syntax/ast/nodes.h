@@ -8,11 +8,8 @@
 #include <string>
 
 #include "../../utils/errors.h"
+#include "../../utils/macros.h"
 #include "errors.h"
-
-#define DECL_TYPEDEF(cls) \
-  class cls##_;           \
-  typedef cls##_ *cls;
 
 // forward declarations
 DECL_TYPEDEF(ASTNode)
