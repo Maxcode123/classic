@@ -24,12 +24,13 @@ $(BIN)/test_parser: $(OBJ)/test_parser.o $(OBJ)/classical.tab.o $(OBJ)/mock_lex.
 
 .PHONY: unit-test
 unit-test: unit-test-parser unit-test-scanner unit-test-utils unit-test-generator
+unit-test: unit-test-semantics
 
 .PHONY: unit-test-generator
 unit-test-generator: test-code-generator
 
-.PHONY: unit-test-validator
-unit-test-validator: test-semantic-validator
+.PHONY: unit-test-semantics
+unit-test-semantics: test-semantic-validator test-environment
 
 .PHONY: unit-test-parser
 unit-test-parser: test-nodes test-builder
@@ -46,6 +47,10 @@ test-code-generator: $(BIN)/test_code_generator
 
 .PHONY: test-semantic-validator
 test-semantic-validator: $(BIN)/test_validator
+	$<
+
+.PHONY: test-environment
+test-environment: $(BIN)/test_environment
 	$<
 
 .PHONY: test-builder
@@ -68,6 +73,9 @@ $(BIN)/test_code_generator: $(OBJ)/nodes.o $(OBJ)/code_generator.o $(OBJ)/test_c
 	$(CCTEST) -lLLVM-15
 
 $(BIN)/test_validator: $(OBJ)/validator.o $(OBJ)/nodes.o $(OBJ)/test_validator.o
+	$(CCTEST)
+
+$(BIN)/test_environment: $(OBJ)/test_environment.o $(OBJ)/nodes.o
 	$(CCTEST)
 
 $(BIN)/test_builder: $(OBJ)/builder.o $(OBJ)/nodes.o $(OBJ)/test_builder.o

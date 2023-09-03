@@ -29,6 +29,7 @@ class Environment {
     return nullptr;
   }
   void clear() { this->map.clear(); }
+  int size() { return this->map.size(); }
 
  protected:
   std::map<std::string, T> map;
