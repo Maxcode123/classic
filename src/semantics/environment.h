@@ -94,6 +94,11 @@ class EnvironmentsProxy {
   }
   EnvironmentsProxy() {}
 
+  void update_type(std::string name, void*) {}
+  bool contains_type(std::string name) { return false; }
+  void* get_type(std::string name) { return nullptr; }
+  void clear_types() {}
+
   void update_function(std::string name, FunctionSignature fs) {
     functions_proxy.update(name, fs);
   }
