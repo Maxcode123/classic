@@ -72,8 +72,16 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     AssignStatement stm) {
-  stm->rhs_expression->set_classic_type(
-      this->type_deductor.deduce(stm->rhs_expression));
+  std::vector<SemanticErrorMessage> errs{};
+  if (stm->rhs_expression->type == BINARY_OPERATION_EXPRESSION) {
+    BinaryOperationExpression binop =
+        stm->rhs_expression->downcast<BinaryOperationExpression>();
+    this->merge(errs, this->analyze(binop));
+    stm->rhs_expression->set_classic_type(binop->classic_type);
+  } else {
+    stm->rhs_expression->set_classic_type(
+        this->deduce_type(stm->rhs_expression));
+  }
   return this->validator.validate(stm);
 }
 
@@ -89,16 +97,37 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Expression exp) {
   switch (exp->type) {
-    case LITERAL_EXPRESSION:
+    case LITERAL_EXPRESSION: {
+      LiteralExpression lit = exp->downcast<LiteralExpression>();
+      exp->set_classic_type(
+          (new ClassicBuiltinType_(lit->classic_builtin_type))->upcast());
       return std::vector<SemanticErrorMessage>{};
-    case VARIABLE_EXPRESSION:
-      return this->analyze(exp->downcast<VariableExpression>());
-    case FUNCTION_CALL_EXPRESSION:
-      return this->analyze(exp->downcast<FunctionCallExpression>());
-    case BINARY_OPERATION_EXPRESSION:
-      return this->analyze(exp->downcast<BinaryOperationExpression>());
-    case PARENTHESES_EXPRESSION:
-      return this->analyze(exp->downcast<ParenthesesExpression>());
+    }
+    case VARIABLE_EXPRESSION: {
+      VariableExpression var = exp->downcast<VariableExpression>();
+      std::vector<SemanticErrorMessage> errs = this->analyze(var);
+      exp->set_classic_type(var->classic_type);
+      return errs;
+    }
+    case FUNCTION_CALL_EXPRESSION: {
+      FunctionCallExpression call = exp->downcast<FunctionCallExpression>();
+      std::vector<SemanticErrorMessage> errs = this->analyze(call);
+      exp->set_classic_type(call->classic_type);
+      return errs;
+    }
+    case BINARY_OPERATION_EXPRESSION: {
+      BinaryOperationExpression binop =
+          exp->downcast<BinaryOperationExpression>();
+      std::vector<SemanticErrorMessage> errs = this->analyze(binop);
+      exp->set_classic_type(binop->classic_type);
+      return errs;
+    }
+    case PARENTHESES_EXPRESSION: {
+      ParenthesesExpression paren = exp->downcast<ParenthesesExpression>();
+      std::vector<SemanticErrorMessage> errs = this->analyze(paren);
+      exp->set_classic_type(paren->classic_type);
+      return errs;
+    }
     default:
       return std::vector<SemanticErrorMessage>{};
   }
@@ -106,19 +135,28 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(Expression exp) {
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     VariableExpression exp) {
+  exp->set_classic_type(this->type_deductor.deduce(exp));
   return this->validator.validate(exp);
 }
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     FunctionCallExpression exp) {
+  std::vector<SemanticErrorMessage> errs{};
   for (auto itr = ArgumentListIterator(exp->argument_list),
             end = ArgumentListIterator(nullptr);
        itr != end; ++itr) {
-    itr->expression->set_classic_type(
-        this->type_deductor.deduce(itr->expression));
+    if (itr->expression->type == BINARY_OPERATION_EXPRESSION) {
+      BinaryOperationExpression binop =
+          itr->expression->downcast<BinaryOperationExpression>();
+      this->merge(errs, this->analyze(binop));
+      itr->expression->set_classic_type(binop->classic_type);
+    } else {
+      itr->expression->set_classic_type(this->deduce_type(itr->expression));
+    }
   }
 
-  return this->validator.validate(exp);
+  exp->set_classic_type(this->type_deductor.deduce(exp));
+  return this->merge(errs, this->validator.validate(exp));
 }
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
@@ -128,7 +166,7 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     left = this->analyze(exp->left_expression);
   } else {
     exp->left_expression->set_classic_type(
-        this->type_deductor.deduce(exp->left_expression));
+        this->deduce_type(exp->left_expression));
     left = this->analyze(exp->left_expression);
   }
 
@@ -137,7 +175,7 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     right = this->analyze(exp->right_expression);
   } else {
     exp->right_expression->set_classic_type(
-        this->type_deductor.deduce(exp->right_expression));
+        this->deduce_type(exp->right_expression));
     right = this->analyze(exp->right_expression);
   }
 
@@ -145,7 +183,10 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     std::vector<SemanticErrorMessage> errs = this->validator.validate(exp);
     if (errs.size() == 0) {
       exp->set_classic_type(exp->right_expression->classic_type);
-      return errs;
+      exp->set_builtin_type(
+          exp->right_expression->classic_type->downcast<ClassicBuiltinType>()
+              ->type);
+      return std::vector<SemanticErrorMessage>{};
     }
     this->merge(right, errs);
   }
@@ -155,7 +196,9 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::analyze(
     ParenthesesExpression exp) {
-  return this->analyze(exp->expression);
+  std::vector<SemanticErrorMessage> errs = this->analyze(exp->expression);
+  exp->set_classic_type(exp->expression->classic_type);
+  return errs;
 }
 
 std::vector<SemanticErrorMessage> SemanticAnalyzer::merge(
@@ -163,4 +206,22 @@ std::vector<SemanticErrorMessage> SemanticAnalyzer::merge(
     std::vector<SemanticErrorMessage> errs2) {
   errs1.insert(errs1.begin(), errs2.begin(), errs2.end());
   return errs1;
+}
+
+ClassicType SemanticAnalyzer::deduce_type(Expression exp) {
+  // binary operation exp returns null
+  switch (exp->type) {
+    case LITERAL_EXPRESSION:
+      return exp->downcast<LiteralExpression>()->classic_type;
+    case VARIABLE_EXPRESSION:
+      return this->type_deductor.deduce(exp->downcast<VariableExpression>());
+    case FUNCTION_CALL_EXPRESSION:
+      return this->type_deductor.deduce(
+          exp->downcast<FunctionCallExpression>());
+    case PARENTHESES_EXPRESSION:
+      return this->deduce_type(
+          exp->downcast<ParenthesesExpression>()->expression);
+    default:
+      return nullptr;
+  }
 }

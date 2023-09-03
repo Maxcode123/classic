@@ -138,6 +138,13 @@ class ClassicType_
           "cannot compare ClassicType(s) of type CUSTOM_TYPE. Custom types are "
           "not supported.");
   }
+  std::string str() {
+    if (this->type == BUILTIN_TYPE)
+      return this->downcast<ClassicBuiltinType>()->str();
+    else if (this->type == CUSTOM_TYPE)
+      return this->downcast<ClassicCustomType>()->type_name;
+    return "indefinable";
+  }
 
   static std::string cls() { return "ClassicType"; }
 };
@@ -149,6 +156,20 @@ class ClassicBuiltinType_ : virtual public ClassicType_ {
   ClassicType upcast() { return new ClassicType_(this); }
 
   bool eq(ClassicBuiltinType t) { return this->type == t->type; }
+  std::string str() {
+    switch (this->type) {
+      case classic_builtin_types::ANEF:
+        return "anef";
+      case classic_builtin_types::DUPL:
+        return "dupl";
+      case classic_builtin_types::INT:
+        return "int";
+      case classic_builtin_types::STR:
+        return "str";
+      default:
+        return "unknown";
+    }
+  }
 
  private:
   using ClassicType_::downcast;

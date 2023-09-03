@@ -37,6 +37,8 @@ class SemanticAnalyzer {
  private:
   Validator validator;
   TypeDeductor type_deductor;
-  std::vector<SemanticErrorMessage> merge(std::vector<SemanticErrorMessage> errs1,
-                                   std::vector<SemanticErrorMessage> errs2);
+  std::vector<SemanticErrorMessage> merge(
+      std::vector<SemanticErrorMessage> errs1,
+      std::vector<SemanticErrorMessage> errs2);
+  ClassicType deduce_type(Expression exp);
 };
