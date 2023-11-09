@@ -1,4 +1,4 @@
-LLVM_LIB=-lLLVM-15
+LLVM_LIB=-lLLVM
 PARSER_OBJ=$(OBJ)/classical.tab.o $(OBJ)/lex.yy.o $(OBJ)/tokens.o $(OBJ)/parse.o $(OBJ)/nodes.o $(OBJ)/builder.o
 
 .PHONY: generator
