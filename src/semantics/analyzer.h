@@ -4,6 +4,10 @@
 #include "type_deductor.h"
 #include "validator.h"
 
+/*
+This class operates on generic or specific ast nodes and produces semantic
+error messages and is the interface of the semantic analysis.
+*/
 class SemanticAnalyzer {
  public:
   SemanticAnalyzer(Validator v, TypeDeductor t) {

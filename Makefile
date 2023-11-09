@@ -43,7 +43,7 @@ $(OBJ)/%.o: $(SRC)/utils/%.c
 	$(CC) $(ARGS) -c $< -o $@
 
 .PHONY: clean
-clean: clean-binaries clean-object clean-lexical clean-syntax
+clean: clean-binaries clean-object clean-test-files clean-lexical clean-syntax
 
 .PHONY:clean-binaries
 clean-binaries:
@@ -52,3 +52,7 @@ clean-binaries:
 .PHONY:clean-object
 clean-object:
 	$(RM) obj/*
+
+.PHONY: clean-test-files
+clean-test-files:
+	$(RM) tests/test.ll

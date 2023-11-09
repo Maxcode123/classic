@@ -7,6 +7,12 @@
 #include "environment.h"
 #include "errors.h"
 
+/*
+This class is responsible for validating specific ast nodes and producing
+semantic error messages. All the semantics logic is encapsulated in its'
+methods.
+Methods expect the nodes to have a types.
+*/
 class Validator {
  public:
   Validator() {}
